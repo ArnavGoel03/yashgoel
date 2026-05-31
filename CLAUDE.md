@@ -220,6 +220,63 @@ The `lib/affiliate.ts` rewriter is already wired. Once env vars are set in Verce
 
 There's a yellow warning banner on the page. The URL is private (excluded from sitemap and robots). Adding password auth was explicitly deferred by the user. Don't sneak it in unprompted; if asked, the design is `ADMIN_PASSWORD` env var + signed cookie middleware.
 
+# Data model, invariants & tests (run these before every push)
+
+This is a content-first site: the data IS the product, and almost every
+"the site is breaking again" report traces back to content data drifting
+out of its schema or a cross-reference going dangling. There is a fast
+gate for exactly this — **use it.**
+
+**`pnpm test` is the gate. Run it before every push and after any content
+or `lib/` change.** It runs in seconds; `next build` takes minutes and a
+bad deploy takes the site down, so catch it here.
+
+The data layer, top to bottom:
+
+- **Schema:** `lib/schema.ts` — Zod `reviewFrontmatter` + `primerFrontmatter`.
+  Strict. Required review fields: `name`, `brand`, `category`, `rating`
+  (→ `datePublished` too). Bad data fails parse, which fails the test
+  and the build.
+- **Loaders:** `lib/content.ts` reads `content/<kind>/*.mdx` (7 kinds:
+  skincare, supplements, oral-care, hair-care, body-care, essentials,
+  miscellaneous) and `content/primers/*.mdx`, validates, sorts, filters
+  hidden/retired.
+- **Author-owned JSON:** `content/photos.json`, `content/_library.json`,
+  `content/_listening.json` (cron-written). Real data or honest empty
+  state — never invented.
+- **The gate test:** `tests/data-integrity.test.ts` validates **all
+  seven kinds + primers** (the older `lib/content.test.ts` only smoke-
+  tests three) and every cross-reference: slug uniqueness, `crossList`
+  targets, primer `relatedProductSlugs`, `uvFilters` names, glossary↔
+  primer `seeAlso` links, **buy-link retailer-host mapping**, per-region
+  availability, ISO dates, and JSON shape. When it fails it names the
+  file and field — fix that, don't go spelunking.
+
+**Hard invariant — retailers before URLs:** every buy-link host must be
+explicitly mapped in `lib/retailers.ts` (`RETAILER_BY_HOST` **and** the
+matching region host list `INDIA_HOSTS`/`USA_HOSTS`/`UK_HOSTS`). Add the
+retailer there *before* you put its URL in an MDX file. The test enforces
+this via `isKnownRetailerHost()`. (This is what caught `a.co` rendering
+as "A", `direct.playstation.com` as "Direct", and Apple/WHOOP/Nike/Anker
+brand-direct links falling through with no region or affiliate coverage.)
+When you add a brand-direct host that path-localizes per region
+(`apple.com/in`, `whoop.com/uk`), file it under one region host list for
+affiliate routing; per-region availability still comes from which
+`*Links` array the URL sits in.
+
+# Scalability posture (built for a spike)
+
+`cacheComponents: true` (PPR) + no DB on the read path + no middleware on
+public routes means public traffic is served from the CDN edge, not
+origin compute. A viral spike is cache hits, not renders. **The gating
+factor for a 1M/day spike is the Vercel plan, not the code** — be on Pro
+(Hobby quotas throttle first), confirm photos serve from R2, keep the
+write-endpoint rate limits wired. Don't add per-request work to a public
+route (no `cookies()`/`headers()`/`auth()`/`fetch` without `use cache`
+in `app/layout.tsx` or any public page) — it silently forces dynamic
+rendering and dismantles the static shell. See STATE.md for the verified
+current architecture and a session quickstart.
+
 # Build / deploy notes
 
 - Push to `main` triggers a Vercel rebuild (~30-60s).

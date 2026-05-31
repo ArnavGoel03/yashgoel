@@ -1,6 +1,23 @@
 import { commitRepoFile, readRepoFile } from "@/lib/github";
+import { createLimiter } from "@/lib/rate-limit";
 
 const SUBSCRIBERS_PATH = "content/_subscribers.json";
+
+// This endpoint did one GitHub Contents-API read on EVERY hit, with no
+// throttle, an unauthenticated flood could exhaust the shared
+// GITHUB_TOKEN's 5000 req/hr quota and take down ALL repo writes (admin
+// publishing, subscribe, inbox). Gate it before any GitHub call.
+const limit = createLimiter({ name: "confirm", max: 8, windowSeconds: 60 });
+
+// Vercel sets the real client IP as x-real-ip, or the RIGHTMOST
+// x-forwarded-for entry. Reading the leftmost trusts the caller.
+function clientIp(req: Request): string {
+  return (
+    req.headers.get("x-real-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() ||
+    "0.0.0.0"
+  );
+}
 
 type Subscriber = {
   id: string;
@@ -31,12 +48,18 @@ export async function GET(req: Request): Promise<Response> {
     return reply("Missing token.", 400);
   }
 
+  // Throttle BEFORE the GitHub read so a flood can't burn the token quota.
+  const gate = await limit(clientIp(req));
+  if (!gate.ok) {
+    return reply("Too many attempts. Try again in a minute.", 429);
+  }
+
   const raw = (await readRepoFile(SUBSCRIBERS_PATH)) ?? "[]";
   let list: Subscriber[];
   try {
     list = JSON.parse(raw) as Subscriber[];
   } catch {
-    // _subscribers.json is corrupted — don't kill the whole opt-in /
+    // _subscribers.json is corrupted, don't kill the whole opt-in /
     // unsub flow with a 500 trace. Show the same generic message as
     // an expired link.
     return reply(

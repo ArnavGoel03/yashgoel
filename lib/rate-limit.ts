@@ -3,7 +3,7 @@
  * fallback when not.
  *
  * Why Upstash: the previous in-memory `ipHits` map reset on every Vercel
- * cold start and didn't share state across regions or warm instances —
+ * cold start and didn't share state across regions or warm instances -
  * which meant the rate limiter was a deterrent at best. Upstash via
  * the Vercel Marketplace is a sub-200ms HTTP API with global
  * replication, perfect for per-IP counters.
@@ -11,7 +11,7 @@
  * To enable, provision Upstash Redis from the Vercel Marketplace:
  *   https://vercel.com/marketplace/upstash
  * Then `vercel env pull .env.local` to pick up `KV_REST_API_URL` and
- * `KV_REST_API_TOKEN` (or the new `UPSTASH_REDIS_REST_*` names — both
+ * `KV_REST_API_TOKEN` (or the new `UPSTASH_REDIS_REST_*` names, both
  * naming schemes are supported here).
  *
  * Without those env vars the limiter falls back to the per-instance
@@ -34,13 +34,34 @@ export function createLimiter(opts: {
   max: number;
   windowSeconds: number;
 }): Limiter {
-  const upstash = tryUpstash(opts);
+  const memory = createMemoryLimiter(opts);
+  const upstash = tryUpstash(opts, memory);
   if (upstash) return upstash;
 
-  // ── In-memory fallback ────────────────────────────────────────────
-  // Per-instance Map — survives across calls inside the same Vercel
-  // function instance but resets on cold start. Good enough for dev /
-  // preview and as a soft deterrent if Upstash ever returns errors.
+  // No shared store configured. In production on Vercel this is a real
+  // gap: the in-memory Map is per-instance and resets on cold start, so
+  // under Fluid Compute the effective limit is max × live-instances.
+  // Warn loudly so it's visible in function logs until Upstash is wired.
+  if (process.env.VERCEL && process.env.NODE_ENV === "production") {
+    console.error(
+      `[rate-limit] "${opts.name}": Upstash/KV not configured in production, ` +
+        `falling back to a per-instance in-memory limiter that does NOT share ` +
+        `state across Vercel instances. Provision Upstash Redis and set ` +
+        `KV_REST_API_URL / KV_REST_API_TOKEN for effective global rate limiting.`,
+    );
+  }
+  return memory;
+}
+
+// Per-instance sliding-window limiter. Survives across calls inside the
+// same warm Vercel instance but resets on cold start and is NOT shared
+// across instances, a soft deterrent, and the degraded fallback used
+// when Upstash errors (better than failing fully open).
+function createMemoryLimiter(opts: {
+  name: string;
+  max: number;
+  windowSeconds: number;
+}): Limiter {
   const hits = new Map<string, number[]>();
   const windowMs = opts.windowSeconds * 1000;
   return async (ip: string): Promise<RateLimitResult> => {
@@ -57,11 +78,10 @@ export function createLimiter(opts: {
   };
 }
 
-function tryUpstash(opts: {
-  name: string;
-  max: number;
-  windowSeconds: number;
-}): Limiter | null {
+function tryUpstash(
+  opts: { name: string; max: number; windowSeconds: number },
+  fallback: Limiter,
+): Limiter | null {
   // Accept either the Vercel-KV naming or the canonical Upstash naming.
   const url =
     process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
@@ -86,11 +106,13 @@ function tryUpstash(opts: {
       );
       return { ok: false, retryAfterSeconds };
     } catch (err) {
-      // If Upstash itself errors, fail OPEN so a Redis outage doesn't
-      // take down sign-ups. The honeypot + email regex still block the
-      // common bot cases.
+      // Degrade to the in-memory limiter on a transient Upstash error
+      // rather than failing fully OPEN. The old behavior returned ok:true
+      // (i.e. UNLIMITED) on every error, so anyone who could make Upstash
+      // time out also removed rate limiting entirely. Per-instance is
+      // weaker but still bounds a flood; honeypot + regex catch the rest.
       console.error(`rate-limit ${opts.name} upstash error:`, err);
-      return { ok: true };
+      return fallback(ip);
     }
   };
 }

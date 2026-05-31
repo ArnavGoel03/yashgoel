@@ -121,6 +121,13 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   const ua = req.headers.get("user-agent") ?? undefined;
 
+  // IP + UA are PII; do NOT persist them to the repo (where they live in
+  // public commit history forever). Log to stderr for abuse investigation
+  // only, Vercel function logs are visible solely to the project owner.
+  // (Mirrors the subscribe route's red-team fix; inbox had been
+  // committing both fields.)
+  console.info("inbox", { ip, ua, kind, slug });
+
   const entry: InboxEntry = {
     id: crypto.randomUUID(),
     kind,
@@ -129,8 +136,6 @@ export async function POST(req: Request): Promise<NextResponse> {
     note,
     createdAt: new Date().toISOString(),
     read: false,
-    ip,
-    ua,
   };
 
   let existing: InboxEntry[] = [];

@@ -198,9 +198,16 @@ function parseBuyLinks(
       url = line;
       retailer = retailerForUrl(line);
     }
+    let parsed: URL;
     try {
-      new URL(url);
+      parsed = new URL(url);
     } catch {
+      continue;
+    }
+    // Only http(s) buy links. `new URL()` happily accepts javascript:/data:
+    // (valid URLs per spec); drop anything that isn't a web link so a
+    // dangerous-scheme URL can never reach the rendered <a href>.
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
       continue;
     }
     url = normalizeAmazonUrl(url);

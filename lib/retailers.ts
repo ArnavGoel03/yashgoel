@@ -33,7 +33,22 @@ const RETAILER_BY_HOST: Record<string, string> = {
   "zepto.in": "Zepto",
   "swiggy.com": "Swiggy Instamart",
   "perfora.in": "Perfora",
+  "perforacare.com": "Perfora",
   "tirabeauty.com": "Tira",
+  // Amazon short links (a.co resolves to a /dp/ product). Mapping it
+  // explicitly keeps the retailer label "Amazon" instead of "A" and
+  // lets affiliate.ts tag it.
+  "a.co": "Amazon",
+  // Brand-direct stores. These use path-based localization
+  // (apple.com/in, whoop.com/uk) so a single host serves every region;
+  // per-region availability is driven by which *Links array the URL is
+  // filed in, not by the host. They are mapped here so the retailer
+  // label, button theme, and affiliate routing are all intentional.
+  "apple.com": "Apple",
+  "whoop.com": "WHOOP",
+  "nike.com": "Nike",
+  "anker.com": "Anker",
+  "playstation.com": "PlayStation",
 };
 
 export function retailerForUrl(url: string): string {
@@ -48,6 +63,27 @@ export function retailerForUrl(url: string): string {
       .replace(/^./, (c) => c.toUpperCase());
   } catch {
     return "Buy";
+  }
+}
+
+/**
+ * True when a URL's host has an explicit entry in RETAILER_BY_HOST
+ * (exact or subdomain match). The data-integrity test asserts every
+ * buy link in the catalog satisfies this so a new MDX URL on an
+ * unmapped host fails the test instead of silently rendering a
+ * derived, often-wrong label ("A" for a.co, "Direct" for
+ * direct.playstation.com). Rule of thumb: add the retailer here before
+ * you add its URL to a review.
+ */
+export function isKnownRetailerHost(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+    if (RETAILER_BY_HOST[host]) return true;
+    return Object.keys(RETAILER_BY_HOST).some(
+      (base) => host === base || host.endsWith(`.${base}`),
+    );
+  } catch {
+    return false;
   }
 }
 
@@ -174,6 +210,59 @@ const RETAILER_THEME: Record<
     idle: "border-rose-300 bg-rose-50 text-rose-900",
     hover: "hover:border-rose-500 hover:bg-rose-100",
     bar: "bg-rose-700",
+  },
+  Perfora: {
+    idle: "border-stone-300 bg-stone-50 text-stone-900",
+    hover: "hover:border-stone-500 hover:bg-stone-100",
+    bar: "bg-stone-900",
+  },
+  // Brand-direct stores. Region-suffixed display names ("Apple India",
+  // "WHOOP UK") all share the brand's theme so the buy buttons read as
+  // one brand across regions.
+  Apple: {
+    idle: "border-stone-300 bg-stone-50 text-stone-900",
+    hover: "hover:border-stone-500 hover:bg-stone-100",
+    bar: "bg-stone-900",
+  },
+  "Apple India": {
+    idle: "border-stone-300 bg-stone-50 text-stone-900",
+    hover: "hover:border-stone-500 hover:bg-stone-100",
+    bar: "bg-stone-900",
+  },
+  "Apple UK": {
+    idle: "border-stone-300 bg-stone-50 text-stone-900",
+    hover: "hover:border-stone-500 hover:bg-stone-100",
+    bar: "bg-stone-900",
+  },
+  WHOOP: {
+    idle: "border-red-300 bg-red-50 text-red-900",
+    hover: "hover:border-red-500 hover:bg-red-100",
+    bar: "bg-red-700",
+  },
+  "WHOOP India": {
+    idle: "border-red-300 bg-red-50 text-red-900",
+    hover: "hover:border-red-500 hover:bg-red-100",
+    bar: "bg-red-700",
+  },
+  "WHOOP UK": {
+    idle: "border-red-300 bg-red-50 text-red-900",
+    hover: "hover:border-red-500 hover:bg-red-100",
+    bar: "bg-red-700",
+  },
+  Nike: {
+    idle: "border-stone-300 bg-stone-50 text-stone-900",
+    hover: "hover:border-stone-500 hover:bg-stone-100",
+    bar: "bg-stone-900",
+  },
+  Anker: {
+    idle: "border-sky-300 bg-sky-50 text-sky-900",
+    hover: "hover:border-sky-500 hover:bg-sky-100",
+    bar: "bg-sky-700",
+  },
+  "PlayStation Direct": {
+    idle: "border-blue-300 bg-blue-50 text-blue-900",
+    hover: "hover:border-blue-500 hover:bg-blue-100",
+    bar: "bg-blue-700",
   },
 };
 
@@ -340,17 +429,27 @@ export const INDIA_HOSTS = [
   "zepto.in",
   "swiggy.com",
   "perfora.in",
+  "perforacare.com",
   "tirabeauty.com",
 ];
 
 export const USA_HOSTS = [
   "amazon.com",
   "amzn.to",
+  "a.co",
   "target.com",
   "walmart.com",
   "sephora.com",
   "ulta.com",
   "thorne.com",
+  // Brand-direct stores. Filed under USA as their canonical .com
+  // storefront; per-region availability still comes from *Links array
+  // placement, so an apple.com URL in ukLinks reads as UK-available.
+  "apple.com",
+  "whoop.com",
+  "nike.com",
+  "anker.com",
+  "playstation.com",
 ];
 
 export const UK_HOSTS = [

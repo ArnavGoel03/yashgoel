@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Plus, Search, X } from "lucide-react";
+import { safeInternalHref } from "@/lib/safe-url";
 
 type CatalogItem = {
   kind: string;
@@ -31,7 +32,7 @@ type StackEntry = {
 const WINDOWS: { id: Window; label: string; tip: string }[] = [
   { id: "morning", label: "Morning, with breakfast", tip: "Fat-soluble vitamins (A, D, E, K) absorb best with food." },
   { id: "midday", label: "Midday", tip: "B-complex hits later in the day cause sleep trouble for some." },
-  { id: "preworkout", label: "Pre-workout", tip: "30–45 min before. Caffeine, citrulline, beta-alanine." },
+  { id: "preworkout", label: "Pre-workout", tip: "30-45 min before. Caffeine, citrulline, beta-alanine." },
   { id: "postworkout", label: "Post-workout", tip: "Protein within 60 min, creatine any time but PWO is the convenient slot." },
   { id: "evening", label: "Evening, with dinner", tip: "Magnesium glycinate, omega-3 with the largest fat-containing meal." },
   { id: "bedtime", label: "Bedtime", tip: "L-theanine, glycine, ashwagandha if you take it twice a day." },
@@ -260,7 +261,9 @@ function decodeState(raw: string | null): { entries: StackEntry[]; goals: Goal[]
         name: x.n,
         brand: x.b,
         ingredients: x.g ?? [],
-        href: x.h,
+        // Share-link payload comes from an attacker-controllable ?s= param;
+        // only same-origin relative hrefs are allowed back into a <Link>.
+        href: safeInternalHref(x.h),
       })),
       goals: s.g ?? [],
     };
@@ -753,17 +756,17 @@ function Stack({
 function SidebarGuide({ goals }: { goals: Goal[] }) {
   const tips: string[] = [];
   if (goals.includes("muscle"))
-    tips.push("Creatine 3–5 g daily, no loading. Whey within 60 min post-workout.");
+    tips.push("Creatine 3-5 g daily, no loading. Whey within 60 min post-workout.");
   if (goals.includes("sleep"))
-    tips.push("Magnesium glycinate 200–400 mg about 60 min before bed.");
+    tips.push("Magnesium glycinate 200-400 mg about 60 min before bed.");
   if (goals.includes("energy"))
     tips.push("Caffeine + L-theanine 1:2 in the morning is the cleanest stim.");
   if (goals.includes("joints"))
-    tips.push("Fish oil 2–3 g EPA+DHA per day. Curcumin pairs with piperine for absorption.");
+    tips.push("Fish oil 2-3 g EPA+DHA per day. Curcumin pairs with piperine for absorption.");
   if (goals.includes("heart"))
     tips.push("Omega-3 with the largest fat-containing meal. CoQ10 if on statins.");
   if (goals.includes("general"))
-    tips.push("Vitamin D 1000–2000 IU daily; check serum 25-OH-D once a year.");
+    tips.push("Vitamin D 1000-2000 IU daily; check serum 25-OH-D once a year.");
 
   return (
     <div className="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">

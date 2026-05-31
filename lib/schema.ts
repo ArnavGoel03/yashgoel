@@ -25,6 +25,13 @@ function productUrl() {
   return z
     .string()
     .url()
+    // Zod's .url() accepts `javascript:`/`data:` (they ARE valid URLs per
+    // the spec). Buy links must be http(s), this stops a dangerous-scheme
+    // URL from ever entering the content at the data layer (the render
+    // layer also sanitizes, but defense in depth).
+    .refine((u) => /^https?:\/\//i.test(u.trim()), {
+      message: "Buy links must be http(s) URLs.",
+    })
     .refine((u) => !SEARCH_URL_PATTERN.test(u) && !SEARCH_QS_PATTERN.test(u), {
       message:
         "Search-result URLs are not valid buy links. Use a /dp/<ASIN> or specific product page.",
@@ -100,9 +107,9 @@ export const reviewFrontmatter = z.object({
   photos: z.array(z.string()).default([]),
   // Optional product video (review walkthrough, application demo).
   // Detail page only, never the listing card. Accepts:
-  //   - raw file URL (.mp4 / .webm / .mov) — rendered with <video>
-  //   - YouTube watch / shorts / youtu.be URL — rendered as iframe
-  //   - Vimeo URL — rendered as iframe
+  //   - raw file URL (.mp4 / .webm / .mov), rendered with <video>
+  //   - YouTube watch / shorts / youtu.be URL, rendered as iframe
+  //   - Vimeo URL, rendered as iframe
   video: z.string().url().optional(),
   photoTimeline: z
     .array(

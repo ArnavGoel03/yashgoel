@@ -17,9 +17,9 @@ type NavItem = {
   tourId?: string;
   /**
    * Nav weight controls the surface a link lives on:
-   *   "primary"   — visible inline at lg+ (six product categories +
+   *   "primary"  , visible inline at lg+ (six product categories +
    *                 Routine, always present in the masthead).
-   *   "secondary" — hidden behind a single "More ▾" button on lg+ so
+   *   "secondary", hidden behind a single "More ▾" button on lg+ so
    *                 the masthead never overflows. Mobile drawer
    *                 (below lg) shows everything regardless.
    *
@@ -46,20 +46,21 @@ const nav: NavItem[] = [
   { href: "/essentials", label: "Essentials", tourId: "tab-essentials", weight: "primary" },
   { href: "/routine", label: "Routine", weight: "primary" },
 
-  // Tools — interactive, builders, references. The three builders
+  // Tools, interactive, builders, references. The three builders
   // (routine, stack, simulator) share /build as a tabbed workshop.
+  { href: "/today", label: "Today", weight: "secondary", group: "tools" },
   { href: "/build", label: "Build", weight: "secondary", group: "tools" },
   { href: "/glossary", label: "Glossary", weight: "secondary", group: "tools" },
   { href: "/primers", label: "Primers", weight: "secondary", group: "tools" },
   { href: "/miscellaneous", label: "Miscellaneous", weight: "secondary", group: "tools" },
 
-  // Personal — voice and life surfaces.
+  // Personal, voice and life surfaces.
   { href: "/library", label: "Library", weight: "secondary", group: "personal" },
   { href: "/photos", label: "Photos", weight: "secondary", group: "personal" },
   { href: "/now", label: "Now", weight: "secondary", group: "personal" },
   { href: "/shelf", label: "Shelf", weight: "secondary", group: "personal" },
 
-  // Meta — about the site itself.
+  // Meta, about the site itself.
   { href: "/best-of/2026", label: "Best of 2026", weight: "secondary", group: "meta" },
   { href: "/about", label: "About", weight: "secondary", group: "meta" },
 ];
@@ -124,7 +125,7 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-stone-200/70 bg-white/80 backdrop-blur dark:border-stone-900/40 dark:bg-stone-950/80">
       <Container className="flex h-16 items-center justify-between gap-6">
         <div className="flex items-baseline gap-3">
-          {/* Logo: editorial monogram. The Y is the brand mark — set
+          {/* Logo: editorial monogram. The Y is the brand mark, set
               large + bold-italic so it carries the masthead by itself.
               `ash` trails behind in a quieter weight + lower opacity,
               like an editorial subhead under the masthead initial.
@@ -280,7 +281,7 @@ export function Header() {
           >
             <Search className="h-4 w-4" />
           </button>
-          {/* Saved shelf — direct link so the reader can find their
+          {/* Saved shelf, direct link so the reader can find their
               bookmarks without digging into the More menu. Hidden on
               phones (mobile drawer already lists /shelf under Personal)
               so the masthead stays uncluttered there. */}

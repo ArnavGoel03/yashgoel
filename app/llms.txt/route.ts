@@ -1,8 +1,17 @@
 import { getPrimers, getReviews } from "@/lib/content";
 import { site } from "@/lib/site";
 
+// Stored review/primer fields (name, brand, title, subtitle) are bare
+// strings, a `]`, `)`, backtick, or newline in any of them would break
+// the Markdown link structure or inject new sections/links into the file
+// LLM crawlers ingest. Collapse newlines and backslash-escape the chars
+// that have structural meaning inside `[label](url)` link syntax.
+function mdText(s: string): string {
+  return s.replace(/[\r\n]+/g, " ").replace(/([[\]()\\`])/g, "\\$1");
+}
+
 /**
- * llms.txt — answer-engine index for LLM crawlers (ChatGPT, Claude,
+ * llms.txt, answer-engine index for LLM crawlers (ChatGPT, Claude,
  * Perplexity, etc). Plain text and markdown, the convention emerging
  * around llmstxt.org. Lists the canonical sections and current
  * inventory so crawlers can pick the right page to cite without
@@ -45,7 +54,7 @@ export async function GET(): Promise<Response> {
   ];
   for (const c of cats) {
     const items = getReviews(c.kind);
-    lines.push(`- [${c.label}](${site.url}${c.path}) — ${items.length} reviews`);
+    lines.push(`- [${c.label}](${site.url}${c.path}), ${items.length} reviews`);
   }
   lines.push("");
 
@@ -57,7 +66,7 @@ export async function GET(): Promise<Response> {
     for (const r of items) {
       const verdict = r.verdict ?? "still testing";
       lines.push(
-        `- [${r.brand} — ${r.name}](${site.url}/${r.kind}/${r.slug}) — ${verdict}`,
+        `- [${mdText(r.brand)}, ${mdText(r.name)}](${site.url}/${r.kind}/${r.slug}), ${mdText(verdict)}`,
       );
     }
     lines.push("");
@@ -69,7 +78,7 @@ export async function GET(): Promise<Response> {
     lines.push("");
     for (const p of primers) {
       lines.push(
-        `- [${p.title}](${site.url}/primers/${p.slug})${p.subtitle ? ` — ${p.subtitle}` : ""}`,
+        `- [${mdText(p.title)}](${site.url}/primers/${p.slug})${p.subtitle ? `, ${mdText(p.subtitle)}` : ""}`,
       );
     }
     lines.push("");

@@ -1,6 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import type { BuyLink, Review } from "@/lib/types";
 import { affiliatize } from "@/lib/affiliate";
+import { safeExternalHref } from "@/lib/safe-url";
 import { formatCostPerDay } from "@/lib/cost";
 import { availabilityLabel, themeForRetailer } from "@/lib/retailers";
 import { hasAnyPrice, pricesByRegion, REGION_TAG } from "@/lib/price";
@@ -18,8 +19,15 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function buildLinkProps(rawHref: string) {
-  const finalHref = affiliatize(rawHref) ?? rawHref;
-  const isAffiliate = finalHref !== rawHref;
+  // Reject javascript:/data:/etc BEFORE affiliatizing so a malformed
+  // buy-link URL in content can never render as a live dangerous href.
+  // (CSP keeps 'unsafe-inline', so it is not a backstop here.)
+  const safe = safeExternalHref(rawHref);
+  if (!safe) {
+    return { href: undefined, rel: "noopener noreferrer", isAffiliate: false };
+  }
+  const finalHref = affiliatize(safe) ?? safe;
+  const isAffiliate = finalHref !== safe;
   return {
     href: finalHref,
     rel: isAffiliate
@@ -39,6 +47,14 @@ function PrimaryLink({
   sublabel?: string;
 }) {
   const link = buildLinkProps(href);
+  // Rejected (non-http) URL → render the label as inert text, never a link.
+  if (!link.href) {
+    return (
+      <span className="group flex w-full items-center justify-between gap-2 rounded-2xl border border-stone-200 bg-stone-50 px-5 py-3 text-sm font-medium text-stone-400 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-500">
+        <span>{label}</span>
+      </span>
+    );
+  }
   return (
     <a
       href={link.href}
@@ -75,6 +91,21 @@ function SecondaryLink({
 }) {
   const link = buildLinkProps(href);
   const theme = themeForRetailer(label);
+  if (!link.href) {
+    return (
+      <span
+        className={cn(
+          "inline-flex w-full items-center justify-between gap-2 rounded-xl border px-4 py-2.5 text-sm opacity-50",
+          theme.idle,
+        )}
+      >
+        <span className="flex items-center gap-2">
+          <span className={cn("h-1.5 w-1.5 rounded-full", theme.bar)} />
+          {label}
+        </span>
+      </span>
+    );
+  }
   return (
     <a
       href={link.href}

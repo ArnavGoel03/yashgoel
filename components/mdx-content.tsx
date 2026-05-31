@@ -1,6 +1,7 @@
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { slugifyHeading } from "@/lib/utils";
+import { safeExternalHref } from "@/lib/safe-url";
 import { HeadingAnchor } from "./heading-anchor";
 import { GlossaryTerm } from "./glossary-term";
 
@@ -50,6 +51,39 @@ function textOf(node: React.ReactNode): string | null {
 const mdxComponents = {
   Aside,
   Term: GlossaryTerm,
+  // Sanitize any author-written anchor/image so a `javascript:`/`data:`
+  // URL in an MDX body (e.g. from a malicious PR) can never render as a
+  // live dangerous href/src. CSP keeps 'unsafe-inline', so it is not a
+  // backstop, this is the backstop.
+  a: ({
+    href,
+    children,
+    ...rest
+  }: {
+    href?: string;
+    children?: React.ReactNode;
+  }) => {
+    const safe = safeExternalHref(href);
+    if (!safe) return <span {...rest}>{children}</span>;
+    const external = /^https?:/i.test(safe);
+    return (
+      <a
+        href={safe}
+        {...(external
+          ? { target: "_blank", rel: "noopener noreferrer nofollow" }
+          : {})}
+        {...rest}
+      >
+        {children}
+      </a>
+    );
+  },
+  img: ({ src, alt, ...rest }: { src?: string; alt?: string }) => {
+    const safe = safeExternalHref(src);
+    if (!safe) return null;
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={safe} alt={alt ?? ""} {...rest} />;
+  },
   h2: ({ children, ...rest }: { children?: React.ReactNode }) => {
     const text = textOf(children);
     const id = text ? slugifyHeading(text) : undefined;
@@ -79,7 +113,7 @@ export function MdxContent({
   source: string;
   /**
    * When true, the first paragraph of the rendered MDX gets a serif
-   * drop cap. Off by default — only product detail pages opt in,
+   * drop cap. Off by default, only product detail pages opt in,
    * since notes and primers benefit from a tighter intro density.
    */
   withDropCap?: boolean;

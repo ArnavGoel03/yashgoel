@@ -16,13 +16,28 @@ function readReviews(kind: Kind): Review[] {
   const dir = path.join(ROOT, kind);
   if (!fs.existsSync(dir)) return [];
   const files = fs.readdirSync(dir).filter((f) => f.endsWith(".mdx"));
-  return files.map((file) => {
-    const raw = fs.readFileSync(path.join(dir, file), "utf8");
-    const { data, content } = matter(raw);
-    const fm = reviewFrontmatter.parse(data);
-    const slug = file.replace(/\.mdx$/, "");
-    return { kind, slug, body: content.trim(), ...fm };
-  });
+  const out: Review[] = [];
+  for (const file of files) {
+    // A single malformed MDX file (missing required frontmatter, a bad
+    // buy-link URL, etc.) used to throw here and, because feed.xml /
+    // sitemap / llms.txt prerender the whole catalog, FAIL THE DEPLOY.
+    // Degrade to log-and-skip so one bad file drops a single entry
+    // instead of bricking the build. `pnpm test` (the data-integrity
+    // gate) is still the place that catches these before push.
+    try {
+      const raw = fs.readFileSync(path.join(dir, file), "utf8");
+      const { data, content } = matter(raw);
+      const fm = reviewFrontmatter.parse(data);
+      const slug = file.replace(/\.mdx$/, "");
+      out.push({ kind, slug, body: content.trim(), ...fm });
+    } catch (err) {
+      console.error(
+        `[content] skipping invalid review ${kind}/${file}:`,
+        (err as Error).message,
+      );
+    }
+  }
+  return out;
 }
 
 function sortByDateDesc<T extends { datePublished: string }>(list: T[]): T[] {
@@ -34,7 +49,7 @@ function sortByDateDesc<T extends { datePublished: string }>(list: T[]): T[] {
 /**
  * Internal ranking score. Folds every signal that should influence the
  * order of a category listing into a single number. Higher = surfaces
- * sooner. Never rendered to the reader — used only for sort.
+ * sooner. Never rendered to the reader, used only for sort.
  *
  * Weights (chosen so the rules dominate ties):
  *   verdict      recommend +60 · okay +25 · testing 0 · bad −40
@@ -47,7 +62,7 @@ function sortByDateDesc<T extends { datePublished: string }>(list: T[]): T[] {
  *   recency      0..15, tapered linearly across the last 365 days off
  *                `datePublished`; older entries bottom out at 0
  *
- * Recency is the smallest term on purpose — it only breaks ties between
+ * Recency is the smallest term on purpose, it only breaks ties between
  * otherwise-equal items. A photographed recommend from a year ago will
  * still beat a brand-new still-testing entry.
  */
@@ -106,7 +121,7 @@ function sortByScore<T extends Rankable>(list: T[]): T[] {
  *
  * Cross-listing: a review whose `crossList` array includes `kind` also
  * shows up here, even if its canonical folder is a different section.
- * (Detail-page URL stays at the canonical kind — no duplicate routes.)
+ * (Detail-page URL stays at the canonical kind, no duplicate routes.)
  */
 export function getReviews(kind: Kind): ReviewSummary[] {
   const native = readReviews(kind);
@@ -151,8 +166,8 @@ export function getReview(kind: Kind, slug: string): Review | null {
 
 export function getAllReviews(): ReviewSummary[] {
   // Use the raw `readReviews` (not `getReviews`) so cross-listed items
-  // appear once in the global union — by their canonical kind, where
-  // they actually live on disk — instead of once per surfaced section.
+  // appear once in the global union, by their canonical kind, where
+  // they actually live on disk, instead of once per surfaced section.
   return sortByDateDesc([
     ...readReviews("skincare"),
     ...readReviews("supplements"),
@@ -169,7 +184,7 @@ export function getAllReviews(): ReviewSummary[] {
 /**
  * Like `getAllReviews()` but keeps the `body` field. Used by the
  * search-index builder so snippet generation has the full prose to
- * match against. Build-time only — never ship the full bodies into a
+ * match against. Build-time only, never ship the full bodies into a
  * client payload.
  */
 export function getAllReviewsWithBody(): Review[] {
@@ -198,13 +213,24 @@ function readPrimers(): Primer[] {
   const dir = path.join(ROOT, "primers");
   if (!fs.existsSync(dir)) return [];
   const files = fs.readdirSync(dir).filter((f) => f.endsWith(".mdx"));
-  return files.map((file) => {
-    const raw = fs.readFileSync(path.join(dir, file), "utf8");
-    const { data, content } = matter(raw);
-    const fm = primerFrontmatter.parse(data);
-    const slug = file.replace(/\.mdx$/, "");
-    return { slug, body: content.trim(), ...fm };
-  });
+  const out: Primer[] = [];
+  for (const file of files) {
+    // Same resilience as readReviews: a single bad primer must not fail
+    // the whole prerender/deploy.
+    try {
+      const raw = fs.readFileSync(path.join(dir, file), "utf8");
+      const { data, content } = matter(raw);
+      const fm = primerFrontmatter.parse(data);
+      const slug = file.replace(/\.mdx$/, "");
+      out.push({ slug, body: content.trim(), ...fm });
+    } catch (err) {
+      console.error(
+        `[content] skipping invalid primer ${file}:`,
+        (err as Error).message,
+      );
+    }
+  }
+  return out;
 }
 
 export function getPrimers(): PrimerSummary[] {

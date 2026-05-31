@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Search, X } from "lucide-react";
+import { safeInternalHref } from "@/lib/safe-url";
 
 type CatalogItem = {
   kind: string;
@@ -32,7 +33,7 @@ type RoutineEntry = {
 const SKINCARE_ORDER: { id: string; label: string; tip?: string }[] = [
   { id: "face wash", label: "Face wash / oil cleanse", tip: "60 seconds, lukewarm water." },
   { id: "cleanser", label: "Second cleanse", tip: "PM only if you wore SPF or makeup." },
-  { id: "chemical exfoliant", label: "Chemical exfoliant", tip: "AHA / BHA. 2–3 nights a week, never with retinoids." },
+  { id: "chemical exfoliant", label: "Chemical exfoliant", tip: "AHA / BHA. 2-3 nights a week, never with retinoids." },
   { id: "chemical peel", label: "Peel", tip: "Once a week max. AHA 30% / BHA 2% kind." },
   { id: "toner", label: "Toner", tip: "Damp skin. Pat in." },
   { id: "essence", label: "Essence", tip: "Korean step. Hydration before serums." },
@@ -192,7 +193,9 @@ function decodeState(raw: string | null): {
         name: x.n,
         brand: x.b,
         ingredients: x.g ?? [],
-        href: x.h,
+        // Share-link payload comes from an attacker-controllable ?s= param;
+        // only same-origin relative hrefs are allowed back into a <Link>.
+        href: safeInternalHref(x.h),
       })),
       goals: s.g ?? [],
       time: s.t ?? "morning",

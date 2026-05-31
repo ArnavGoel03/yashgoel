@@ -59,8 +59,15 @@ export function affiliatize(rawUrl: string | undefined | null): string | undefin
   const host = hostOf(rawUrl);
   if (!host) return rawUrl;
 
-  // Amazon: native ?tag= injection per marketplace.
-  if (host === "amazon.com" || host.endsWith(".amazon.com") || host === "amzn.to") {
+  // Amazon: native ?tag= injection per marketplace. `a.co` and
+  // `amzn.to` are Amazon US short links that redirect to a /dp/ page on
+  // amazon.com, so they take the US tag.
+  if (
+    host === "amazon.com" ||
+    host.endsWith(".amazon.com") ||
+    host === "amzn.to" ||
+    host === "a.co"
+  ) {
     const tag = process.env.AMAZON_US_TAG;
     if (tag) return withAmazonTag(rawUrl, tag);
     return rawUrl;

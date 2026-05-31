@@ -16,11 +16,22 @@ const CSP = [
   // 'unsafe-eval' is retained for libs (analytics, error tracking).
   // Vercel + Google Analytics hosts are listed explicitly so a future
   // 'strict-dynamic' upgrade has somewhere to land.
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel-scripts.com https://va.vercel-scripts.com https://vitals.vercel-insights.com https://www.googletagmanager.com https://www.google-analytics.com https://*.vercel-analytics.com",
+  // 'unsafe-eval' dropped, nothing in the bundle (Next 16 prod runtime,
+  // React 19, Vercel analytics, GA via @next/third-parties) needs eval/
+  // Function. 'unsafe-inline' is retained only because cacheComponents
+  // prerender can't carry a per-request nonce for the framework bootstrap.
+  "script-src 'self' 'unsafe-inline' https://*.vercel-scripts.com https://va.vercel-scripts.com https://vitals.vercel-insights.com https://www.googletagmanager.com https://www.google-analytics.com https://*.vercel-analytics.com",
   "style-src 'self' 'unsafe-inline'",
+  // img-src stays wildcard-https on purpose: product cards hot-link
+  // arbitrary retailer CDNs (Amazon/Nykaa/etc) via <img>.
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https:",
+  // Narrowed from the wildcard 'https:' to the exact set the client
+  // actually talks to, closes the open data-exfil sink. Hosts: same-origin
+  // (/api/*), open-meteo (weather widget), Vercel analytics/insights/speed,
+  // and Google Analytics' beacon hosts. Add a host here when a new client
+  // fetch target is introduced.
+  "connect-src 'self' https://api.open-meteo.com https://*.vercel-insights.com https://vitals.vercel-insights.com https://*.vercel-scripts.com https://va.vercel-scripts.com https://*.vercel-analytics.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net",
   // Spotify embeds for the listening section + YouTube/Vimeo for any
   // product walkthrough video in the detail-page gallery.
   "frame-src https://open.spotify.com https://www.youtube-nocookie.com https://player.vimeo.com",
@@ -60,9 +71,13 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "*.public.blob.vercel-storage.com",
+        // Pinned to OUR Blob store, not the wildcard `*.public.blob…`,
+        // so /_next/image can't be used to launder/optimize images from
+        // any Vercel Blob store on the platform (bandwidth + transform-
+        // quota abuse). This is the `yashgoel-products` store.
+        hostname: "znqq4cj0ea3wjrtv.public.blob.vercel-storage.com",
       },
-      // GitHub Release assets — legacy fallback. Active editorial photos
+      // GitHub Release assets, legacy fallback. Active editorial photos
       // have migrated to R2; these entries are pinned to OUR repo so the
       // image optimizer can't be abused as an open image-laundering proxy
       // (without a pathname restriction, any GitHub user could route
@@ -82,11 +97,11 @@ const nextConfig: NextConfig = {
       // expiry chain, no egress cliff.
       {
         protocol: "https",
-        hostname: "*.r2.dev",
-      },
-      {
-        protocol: "https",
-        hostname: "*.r2.cloudflarestorage.com",
+        // Pinned to OUR R2 public bucket subdomain, not the wildcard
+        // `*.r2.dev` (which matched ANY Cloudflare R2 dev bucket on the
+        // internet, an open image-laundering / transform-quota sink
+        // through /_next/image).
+        hostname: "pub-81726e3b98da43bb906dabff81db14a2.r2.dev",
       },
     ],
   },
@@ -113,14 +128,14 @@ const nextConfig: NextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
-          // COOP isolates the browsing context — prevents cross-origin
+          // COOP isolates the browsing context, prevents cross-origin
           // popups from holding a reference to this window. Required for
           // Spectre-class hardening and crossOriginIsolated to return true.
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
           // CORP blocks other origins from loading this site's
           // sub-resources via no-cors fetches.
           { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
-          // Disable implicit DNS prefetch on every link href — stops the
+          // Disable implicit DNS prefetch on every link href, stops the
           // browser from leaking navigation intent to the DNS layer.
           { key: "X-DNS-Prefetch-Control", value: "off" },
           // Closes the Adobe Flash / PDF cross-domain-policies vector.

@@ -9,5 +9,6 @@
       "path": "/api/listening/refresh",
       "schedule": "7 4 * * *"
     }
-  ]
+  ],
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)content/_subscribers.json' ':(exclude)content/_inbox.json' ':(exclude)content/_listening.json'"
 }

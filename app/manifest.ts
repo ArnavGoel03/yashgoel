@@ -50,7 +50,7 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
       },
     ],
-    // Web Share Target — once the site is installed as a PWA the OS
+    // Web Share Target, once the site is installed as a PWA the OS
     // share sheet lists Yash as a destination. Anything shared (URL,
     // text, or title) lands at /search?q=… so the catalog can resolve
     // it. Honored on Android Chrome, Samsung, Edge, and Windows; iOS
@@ -61,6 +61,12 @@ export default function manifest(): MetadataRoute.Manifest {
       params: { title: "q", text: "q", url: "q" },
     },
     shortcuts: [
+      {
+        name: "Today",
+        short_name: "Today",
+        description: "Check off today's habits, brush, skincare, supplements.",
+        url: "/today",
+      },
       {
         name: "Skincare",
         short_name: "Skincare",

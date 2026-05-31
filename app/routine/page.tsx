@@ -42,7 +42,24 @@ export default function RoutineIndexPage() {
         answer &ldquo;what do you actually do, in order?&rdquo;
       </p>
 
-      <ol className="mt-16 divide-y divide-stone-200 border-t border-stone-300 dark:border-stone-800 dark:divide-stone-800">
+      <Link
+        href="/today"
+        className="group mt-10 flex items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white/50 px-5 py-4 transition-colors hover:border-rose-300 dark:border-stone-800 dark:bg-stone-900/30 dark:hover:border-rose-900/60"
+      >
+        <span>
+          <span className="block font-serif text-lg text-stone-900 dark:text-stone-100">
+            Track today against these <span className="text-rose-400">❋</span>
+          </span>
+          <span className="mt-0.5 block text-sm text-stone-500 dark:text-stone-400">
+            A private, offline checklist that lives on your device. Installable to your home screen.
+          </span>
+        </span>
+        <span className="shrink-0 text-sm text-stone-400 transition-colors group-hover:text-rose-500 dark:text-stone-500">
+          Open →
+        </span>
+      </Link>
+
+      <ol className="mt-12 divide-y divide-stone-200 border-t border-stone-300 dark:border-stone-800 dark:divide-stone-800">
         {routines.map((r, i) => {
           const items = getReviewsInRoutine(r);
           return (

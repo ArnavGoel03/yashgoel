@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/container";
 import { signIn } from "@/auth";
+import { safeInternalHref } from "@/lib/safe-url";
 
 export const metadata: Metadata = {
   title: "Admin · Sign in",
@@ -32,8 +33,10 @@ export default async function LoginPage({ searchParams }: Props) {
 
   async function googleSignIn() {
     "use server";
-    const target =
-      from && from.startsWith("/") && !from.startsWith("//") ? from : "/admin";
+    // safeInternalHref rejects absolute/protocol-relative/backslash
+    // (`//evil`, `https://evil`, `/\evil`) targets, only same-origin
+    // relative paths pass, defaulting to /admin.
+    const target = safeInternalHref(from) ?? "/admin";
     await signIn("google", { redirectTo: target });
   }
 

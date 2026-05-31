@@ -13,12 +13,21 @@ type FeedItem = {
 // Escape the five XML-unsafe characters. Hand-rolled rather than pulling a
 // library in for 10 lines of code.
 function esc(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+  return (
+    s
+      // XML 1.0 FORBIDS most C0 control chars entirely, they can't appear
+      // even as numeric entities. A single stray \x00/\x07/\x0B/\x1B in any
+      // review name/summary (easy to paste in from a PDF/terminal) makes the
+      // ENTIRE feed unparseable for every reader, not just that item. Strip
+      // them before escaping.
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;")
+  );
 }
 
 function rfc822(iso: string): string {

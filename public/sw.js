@@ -20,7 +20,7 @@
 //   - cross-origin (Amazon CDN, Vercel Blob, Google Fonts) is left to
 //     the browser; SW never proxies it.
 
-const CACHE = "yashgoel-shell-v3";
+const CACHE = "yashgoel-shell-v4";
 const SHELL = [
   "/",
   "/skincare",
@@ -31,6 +31,10 @@ const SHELL = [
   "/essentials",
   "/miscellaneous",
   "/routine",
+  // /today is the installable habit tracker, precache it so opening
+  // the home-screen icon works fully offline (the tracker itself reads
+  // from localStorage, so it needs no network beyond this shell HTML).
+  "/today",
   "/photos",
   "/now",
   "/about",
@@ -68,7 +72,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Skip Next's data + RSC streaming routes — they need fresh data and
+  // Skip Next's data + RSC streaming routes, they need fresh data and
   // don't tolerate the latency of a cache miss followed by a refresh.
   if (
     url.pathname.startsWith("/_next/data/") ||
