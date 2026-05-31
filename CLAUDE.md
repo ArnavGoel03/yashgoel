@@ -2,7 +2,7 @@
 
 # About this site
 
-A first-person review site, currently deployed at **yashgoel.vercel.app** (the future custom domain is yashgoel.com, not yet pointed). Magazine-editorial aesthetic. Seven product categories — skincare, supplements, oral care, hair care (split into Treatment and Styling chapters), body care, essentials (cornerstone daily devices like the laptop, earbuds, primary charger), and miscellaneous (random utility objects, accessories, gadgets) — plus /routine (with subroutine variants like /routine/morning/post-workout), /primers, /photos, a /now page, /subscribe for the email list, and a private /admin dashboard for adding content. The user (Yash on this site, Arnav at arnavgoel.dev) writes every review after using a product for at least a month.
+A first-person review site, currently deployed at **yashgoel.vercel.app** (the future custom domain is yashgoel.com, not yet pointed). Magazine-editorial aesthetic. Seven product categories, skincare, supplements, oral care, hair care (split into Treatment and Styling chapters), body care, essentials (cornerstone daily devices like the laptop, earbuds, primary charger), and miscellaneous (random utility objects, accessories, gadgets), plus /routine (with subroutine variants like /routine/morning/post-workout), /primers, /photos, a /now page, /subscribe for the email list, and a private /admin dashboard for adding content. The user (Yash on this site, Arnav at arnavgoel.dev) writes every review after using a product for at least a month.
 
 The signature mark across the site is a small rose ❋ glyph; it appears in the header, every page masthead, hover states, and the footer. The accent color is rose only, everything else is stone-neutral. Don't introduce new accent colors.
 
@@ -28,10 +28,10 @@ state, where they evaporate the moment context compacts.
 
 The right section is whichever one fits:
 
-- **Surfaces the user has explicitly removed** — for "kill /X" or "I
+- **Surfaces the user has explicitly removed**, for "kill /X" or "I
   don't want a Y page".
 - **Voice when writing reviews / Verdict words / One product, one card
-  / Regional retailer handling** — for content rules.
+  / Regional retailer handling**, for content rules.
 - A new top-level section with a clear `# Heading` if nothing existing
   fits. Better one extra section than a buried bullet.
 
@@ -111,22 +111,22 @@ filler, AI-generated, or replicable boilerplate. Treat the absence of
 these routes as a permanent decision, do not re-create them in any form
 (no link in nav, no MDX, no replacement-with-different-name):
 
-- **`/changelog`** — a site-wide "what's new" feed pulled from git log.
+- **`/changelog`**, a site-wide "what's new" feed pulled from git log.
   The user does not want a public changelog page. Per-product
   `changelog[]` frontmatter (purchase history) stays. A site-level
   changelog page does not. Never re-add.
-- **`/notes`** — short-form blog posts. Removed because they read as
+- **`/notes`**, short-form blog posts. Removed because they read as
   AI-generated filler. Long-form thinking belongs in `/primers`; product
   takes belong in reviews. Never re-add a third format.
-- **`/uses`** — a uses.tech-style hardware/software list. Removed.
-- **`/colophon`** — type-and-build meta page. Removed publicly to make
+- **`/uses`**, a uses.tech-style hardware/software list. Removed.
+- **`/colophon`**, type-and-build meta page. Removed publicly to make
   the site's editorial choices less copy-pasteable. The original copy
   is preserved at `_local/colophon.md` (gitignored) for the user's
   reference. Never re-publish it as a route.
-- **`/issue` (the Archive)** — monthly digest of every review/primer
+- **`/issue` (the Archive)**, monthly digest of every review/primer
   grouped by month. Removed; the catalog is browsable by category and
   search already, the archive added a layer no one used. Never re-add.
-- **`/listening` as a standalone route** — the user does not want a
+- **`/listening` as a standalone route**, the user does not want a
   separate page for Spotify data. The Spotify cron and snapshot are
   fine, but the surface lives **inline** on the homepage as
   `<ListeningSection>`, never as `/listening`. Do not re-add the
@@ -225,7 +225,7 @@ There's a yellow warning banner on the page. The URL is private (excluded from s
 This is a content-first site: the data IS the product, and almost every
 "the site is breaking again" report traces back to content data drifting
 out of its schema or a cross-reference going dangling. There is a fast
-gate for exactly this — **use it.**
+gate for exactly this, **use it.**
 
 **`pnpm test` is the gate. Run it before every push and after any content
 or `lib/` change.** It runs in seconds; `next build` takes minutes and a
@@ -233,7 +233,7 @@ bad deploy takes the site down, so catch it here.
 
 The data layer, top to bottom:
 
-- **Schema:** `lib/schema.ts` — Zod `reviewFrontmatter` + `primerFrontmatter`.
+- **Schema:** `lib/schema.ts`, Zod `reviewFrontmatter` + `primerFrontmatter`.
   Strict. Required review fields: `name`, `brand`, `category`, `rating`
   (→ `datePublished` too). Bad data fails parse, which fails the test
   and the build.
@@ -243,16 +243,16 @@ The data layer, top to bottom:
   hidden/retired.
 - **Author-owned JSON:** `content/photos.json`, `content/_library.json`,
   `content/_listening.json` (cron-written). Real data or honest empty
-  state — never invented.
+  state, never invented.
 - **The gate test:** `tests/data-integrity.test.ts` validates **all
   seven kinds + primers** (the older `lib/content.test.ts` only smoke-
   tests three) and every cross-reference: slug uniqueness, `crossList`
   targets, primer `relatedProductSlugs`, `uvFilters` names, glossary↔
   primer `seeAlso` links, **buy-link retailer-host mapping**, per-region
   availability, ISO dates, and JSON shape. When it fails it names the
-  file and field — fix that, don't go spelunking.
+  file and field, fix that, don't go spelunking.
 
-**Hard invariant — retailers before URLs:** every buy-link host must be
+**Hard invariant, retailers before URLs:** every buy-link host must be
 explicitly mapped in `lib/retailers.ts` (`RETAILER_BY_HOST` **and** the
 matching region host list `INDIA_HOSTS`/`USA_HOSTS`/`UK_HOSTS`). Add the
 retailer there *before* you put its URL in an MDX file. The test enforces
@@ -269,13 +269,34 @@ affiliate routing; per-region availability still comes from which
 `cacheComponents: true` (PPR) + no DB on the read path + no middleware on
 public routes means public traffic is served from the CDN edge, not
 origin compute. A viral spike is cache hits, not renders. **The gating
-factor for a 1M/day spike is the Vercel plan, not the code** — be on Pro
+factor for a 1M/day spike is the Vercel plan, not the code**, be on Pro
 (Hobby quotas throttle first), confirm photos serve from R2, keep the
 write-endpoint rate limits wired. Don't add per-request work to a public
 route (no `cookies()`/`headers()`/`auth()`/`fetch` without `use cache`
-in `app/layout.tsx` or any public page) — it silently forces dynamic
+in `app/layout.tsx` or any public page), it silently forces dynamic
 rendering and dismantles the static shell. See STATE.md for the verified
 current architecture and a session quickstart.
+
+# Paid and managed resources are production-only (cost optimization)
+
+Cost optimization is a project objective: keep this site on free tiers and
+off the $20 Vercel Pro plan. Two rules follow.
+
+1. **Paid or quota-metered managed stores are wired to the Production
+   environment ONLY.** Upstash Redis (rate limiting) and any future managed
+   DB get their env vars (`KV_REST_API_URL` / `KV_REST_API_TOKEN`, etc.)
+   scoped to **Production** in Vercel, never Preview or Development.
+2. **Preview and dev use a free fallback, not the paid store.** The rate
+   limiter (`lib/rate-limit.ts`) already falls back to a per-instance
+   in-memory limiter when the Upstash env vars are absent, so prod-scoping
+   those vars automatically gives preview/dev the free path with zero
+   config. Detect true production with `process.env.VERCEL_ENV ===
+   "production"` (NOT `NODE_ENV`, which is `"production"` on preview builds
+   too).
+
+When adding any new managed/paid service, follow the same shape: prod gets
+the real resource, preview/dev get a free in-memory or local stub. A
+throwaway preview deploy must never spend paid quota.
 
 # Build / deploy notes
 
@@ -285,7 +306,7 @@ current architecture and a session quickstart.
 
 # Local toolchain (2026-05-16)
 
-This project is canonically pnpm-based — `pnpm-lock.yaml` is the source of truth. If you ever see a `package-lock.json` appear, delete it; it's a local accident from a stray `npm install`.
+This project is canonically pnpm-based, `pnpm-lock.yaml` is the source of truth. If you ever see a `package-lock.json` appear, delete it; it's a local accident from a stray `npm install`.
 
 - `justfile` at repo root holds the canonical dev recipes. Prefer `just dev`, `just build`, `just deploy`, etc. over typing the raw commands. `just` (no args) lists recipes.
 - `mise.toml` pins Node 26 + pnpm latest. Run `mise install` once after cloning.
@@ -328,7 +349,7 @@ If the drive is not mounted, fail loudly and tell the user. Do not silently subs
 
 **Never discard the TIF or CR3 originals from the One Touch.** They are the lossless masters. Lens-cap-on / fully-black test exposures are an explicit exception (user-approved hard delete only). For real photographs, generate web exports from `/tmp/` scratch and upload those derivatives; the masters stay.
 
-## /photos surface — current architecture (2026-05-13)
+## /photos surface, current architecture (2026-05-13)
 
 - **Photo schema** in `lib/types.ts` carries `hero`, `featured`, `hidden`, `tier`, `rawSource` fields. Editorial keepers default tier; bulk archive imports get `tier: "archive"`.
 - **`/photos` page** renders editorial keepers (~31) in chaptered magazine layout (cover spread → anchor → diptych / side-caption / offset rhythm → ❋ closer) and archive frames in a paginated contact-sheet grid below (60 visible, "load more" button to expand).

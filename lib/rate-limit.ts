@@ -38,11 +38,14 @@ export function createLimiter(opts: {
   const upstash = tryUpstash(opts, memory);
   if (upstash) return upstash;
 
-  // No shared store configured. In production on Vercel this is a real
-  // gap: the in-memory Map is per-instance and resets on cold start, so
-  // under Fluid Compute the effective limit is max × live-instances.
-  // Warn loudly so it's visible in function logs until Upstash is wired.
-  if (process.env.VERCEL && process.env.NODE_ENV === "production") {
+  // No shared store configured. Paid stores (Upstash and any future
+  // managed DB) are intentionally PRODUCTION-ONLY: preview and dev deploys
+  // run on the in-memory fallback so no paid quota is spent on throwaway
+  // deployments. Scope `KV_REST_API_*` to the Production environment in
+  // Vercel only. Warn only in true production (VERCEL_ENV === "production"),
+  // because NODE_ENV is "production" on preview builds too and would
+  // misfire there.
+  if (process.env.VERCEL_ENV === "production") {
     console.error(
       `[rate-limit] "${opts.name}": Upstash/KV not configured in production, ` +
         `falling back to a per-instance in-memory limiter that does NOT share ` +
