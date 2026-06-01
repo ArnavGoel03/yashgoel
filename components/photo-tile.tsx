@@ -5,7 +5,7 @@ import type { Photo } from "@/lib/types";
 /**
  * Per-session forensic identifier baked into the visible watermark. Derived
  * from the visitor's forwarded IP + the calendar day + a server-only salt
- * via Web Crypto (works on both Node and Edge runtimes — required since
+ * via Web Crypto (works on both Node and Edge runtimes, required since
  * /photos now runs on Edge for ~500ms cold-start reduction).
  *
  * Hash is one-way (6 hex chars). If a watermarked screenshot ever leaks,
@@ -53,7 +53,7 @@ function formatDate(iso: string) {
  * the document-level right-click / drag / Cmd+S guard for layered
  * protection.
  *
- * The trailing 6-char hex is the per-session ID — if a leaked screenshot
+ * The trailing 6-char hex is the per-session ID, if a leaked screenshot
  * surfaces somewhere, that ID + date narrows down which visitor session
  * originated the leak. Hash is one-way; nothing identifying is rendered.
  */
@@ -294,12 +294,19 @@ export function PhotoHero({ photo, index }: { photo: Photo; index: number }) {
                 Next/Image transcode then loads silently on top and the
                 browser swaps when ready. */}
             {photo.inlineAvif && (
-              <img
-                src={photo.inlineAvif}
-                alt=""
+              // Decorative paint-instant layer. Rendered as a CSS
+              // background, NOT an <img>: the inline AVIF is a ~30 KB
+              // base64 data-URI, and some mobile/in-app browsers refuse a
+              // data-URI that long in an <img src> and draw the broken-
+              // image "?" icon over the hero. A background-image that
+              // fails to decode renders nothing (no icon), and it still
+              // paints from the HTML/CSS with zero network, so the
+              // instant-hero benefit is preserved.
+              <div
                 aria-hidden
                 draggable={false}
-                className="pointer-events-none absolute inset-0 h-full w-full select-none object-cover"
+                className="pointer-events-none absolute inset-0 select-none bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: `url("${photo.inlineAvif}")` }}
               />
             )}
             <Image
