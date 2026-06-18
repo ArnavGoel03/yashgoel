@@ -4,8 +4,8 @@ import { purgeExpiredTrash } from "@/lib/trash";
 
 
 /**
- * Daily cron endpoint that physically deletes any soft-deleted Blob
- * asset whose 30-day grace window has elapsed. Wired up via the
+ * Daily cron endpoint that physically deletes any soft-deleted R2
+ * image asset whose 30-day grace window has elapsed. Wired up via the
  * `crons` block in vercel.json.
  *
  * Auth: Vercel Cron sends a fixed Authorization header derived from

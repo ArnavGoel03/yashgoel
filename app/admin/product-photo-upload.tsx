@@ -1,15 +1,22 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Loader2, Trash2, Upload, X } from "lucide-react";
+import { Loader2, Trash2, Upload } from "lucide-react";
 import { deleteProductImage, uploadProductImage } from "./actions";
 import { cn } from "@/lib/utils";
 
-const BLOB_HOST_SUFFIX = ".public.blob.vercel-storage.com";
+// Host(s) we serve managed images from and can therefore delete
+// remotely. The R2 public origin is configured server-side via
+// R2_PUBLIC_BASE; the client only needs to recognize it, so we expose
+// just the host through NEXT_PUBLIC_R2_PUBLIC_HOST. Falls back to the
+// `*.r2.dev` dev-bucket suffix when that var is unset.
+const R2_PUBLIC_HOST = process.env.NEXT_PUBLIC_R2_PUBLIC_HOST ?? "";
 
-function isBlobUrl(u: string): boolean {
+function isOurImageUrl(u: string): boolean {
   try {
-    return new URL(u).hostname.toLowerCase().endsWith(BLOB_HOST_SUFFIX);
+    const host = new URL(u).hostname.toLowerCase();
+    if (R2_PUBLIC_HOST && host === R2_PUBLIC_HOST.toLowerCase()) return true;
+    return host.endsWith(".r2.dev");
   } catch {
     return false;
   }
@@ -44,7 +51,7 @@ export function ProductPhotoUpload({
         return;
       }
       setUrl(result.url);
-      if (previous && previous !== result.url && isBlobUrl(previous)) {
+      if (previous && previous !== result.url && isOurImageUrl(previous)) {
         // Fire-and-forget; if the cleanup fails we just leave the old
         // file behind, the upload itself already succeeded.
         deleteProductImage(previous).catch(() => undefined);
@@ -59,7 +66,7 @@ export function ProductPhotoUpload({
   async function onRemove() {
     setError(null);
     if (!url) return;
-    if (isBlobUrl(url)) {
+    if (isOurImageUrl(url)) {
       setDeleting(true);
       try {
         const res = await deleteProductImage(url);
@@ -137,14 +144,14 @@ export function ProductPhotoUpload({
                 )}
                 {deleting
                   ? "Moving"
-                  : isBlobUrl(url)
+                  : isOurImageUrl(url)
                     ? "Move to trash"
                     : "Remove"}
               </button>
             </div>
-            {isBlobUrl(url) && (
+            {isOurImageUrl(url) && (
               <p className="text-[10px] text-stone-400 dark:text-stone-500">
-                Stored on Vercel Blob. Delete removes it from storage.
+                Stored on Cloudflare R2. Delete removes it from storage.
               </p>
             )}
           </div>
@@ -159,7 +166,7 @@ export function ProductPhotoUpload({
               {pending ? "Uploading…" : "Drop an image, or click to choose"}
             </p>
             <p className="text-xs text-stone-500 dark:text-stone-400">
-              Stored at original quality on Vercel Blob.
+              Stored at original quality on Cloudflare R2.
             </p>
           </div>
         )}

@@ -1,147 +1,104 @@
-import { del, head, list, put } from "@vercel/blob";
+import {
+  isOurR2Url,
+  keyFromUrl,
+  publicUrl,
+  r2Copy,
+  r2Delete,
+  r2List,
+} from "./r2";
 
 /**
- * Soft-delete plumbing for Vercel Blob assets.
+ * Soft-delete plumbing for R2 image assets.
  *
- * Idea: instead of calling `del()` directly, we *move* the asset to a
- * `__trash/<deletedAt-iso>-<originalKey>` key. The image still lives in
- * storage at a new URL, but the public site stops referencing it
- * because the corresponding MDX `photo:` field gets cleared at the same
- * time. A daily cron then scans `__trash/*` and physically deletes
- * anything older than 30 days.
+ * Instead of deleting an object outright, we *move* it (server-side
+ * copy + delete of the original) to a trash key:
  *
- * Why move instead of mark-with-metadata: Vercel Blob has no
- * mutable metadata or tags layer; the pathname is the only handle we
- * can attach state to.
+ *   __trash/<deletedAtEpochMs>__<rand>__<originalKey>
  *
- * Restore: undo the move, copy the bytes back to the original key,
- * delete the trash entry.
+ * The bytes still live in the bucket at a new public URL, but the
+ * public site stops referencing them because the corresponding MDX
+ * `photo:` field is cleared at the same time. A daily cron then scans
+ * `__trash/*` and physically deletes anything older than 30 days.
+ *
+ * `<rand>` is unguessable entropy so an attacker can't enumerate trash
+ * URLs by brute-forcing the deletion timestamp (R2 public reads have no
+ * auth). `__` (double underscore) is the field separator; generated
+ * object keys only ever contain single underscores.
+ *
+ * Restore: copy the bytes back to the original key, delete the trash
+ * entry.
  */
 
 const TRASH_PREFIX = "__trash/";
 export const TRASH_GRACE_DAYS = 30;
 
-function nowIsoSafe(): string {
-  // 2026-04-25T05-30-12-345Z, safe inside Blob pathnames (no colons).
-  return new Date().toISOString().replace(/[:.]/g, "-");
-}
-
-/**
- * Encode the original key into the trash key so restore can find it
- * again. Format:
- *
- *   __trash/<deletedAtIso>__<originalKey>
- *
- * `__` (double underscore) is the separator; original keys can contain
- * single underscores but never double.
- */
-function trashKeyFor(originalPathname: string): string {
-  return `${TRASH_PREFIX}${nowIsoSafe()}__${originalPathname}`;
+function trashKeyFor(originalKey: string, nowMs: number): string {
+  const rand = globalThis.crypto.randomUUID().replace(/-/g, "");
+  return `${TRASH_PREFIX}${nowMs}__${rand}__${originalKey}`;
 }
 
 function parseTrashKey(
-  pathname: string,
-): { deletedAt: Date; originalPathname: string } | null {
-  if (!pathname.startsWith(TRASH_PREFIX)) return null;
-  const rest = pathname.slice(TRASH_PREFIX.length);
-  const sep = rest.indexOf("__");
-  if (sep === -1) return null;
-  const isoSafe = rest.slice(0, sep);
-  const originalPathname = rest.slice(sep + 2);
-  // Restore the colons / dots from the safe form for Date parsing.
-  const iso = isoSafe.replace(/-/g, (m, idx) => {
-    // Keep the dashes inside the date portion (YYYY-MM-DD) intact.
-    if (idx <= 10) return m;
-    // After "T" position, restore : in HH:MM:SS and . in .sss.
-    return idx === 13 || idx === 16 ? ":" : idx === 19 ? "." : m;
-  });
-  const deletedAt = new Date(iso);
+  key: string,
+): { deletedAt: Date; originalKey: string } | null {
+  if (!key.startsWith(TRASH_PREFIX)) return null;
+  const rest = key.slice(TRASH_PREFIX.length);
+  const firstSep = rest.indexOf("__");
+  if (firstSep === -1) return null;
+  const epoch = Number(rest.slice(0, firstSep));
+  if (!Number.isFinite(epoch)) return null;
+  const afterEpoch = rest.slice(firstSep + 2);
+  const secondSep = afterEpoch.indexOf("__");
+  if (secondSep === -1) return null;
+  const originalKey = afterEpoch.slice(secondSep + 2);
+  if (!originalKey) return null;
+  const deletedAt = new Date(epoch);
   if (Number.isNaN(deletedAt.getTime())) return null;
-  return { deletedAt, originalPathname };
+  return { deletedAt, originalKey };
 }
 
 /**
  * Move an asset from its current key to a timestamped trash key.
- * Returns the new (trash) URL the admin can save for later restore.
+ * Returns the new (trash) public URL the admin can save for later
+ * restore. Locked to our R2 public origin so a stray call can't be
+ * turned into an arbitrary URL fetcher.
  */
-// Vercel Blob URLs are publicly readable for the lifetime of the
-// asset. Soft-delete moves a blob to a `__trash/<iso>__...` key for
-// 30 days before the daily cron physically deletes it; during that
-// window the bytes are still served at the trash URL. To avoid trivial
-// URL guessing (the timestamp prefix narrows the search space to ~60k
-// requests/hour-of-deletion), we set `addRandomSuffix: true` so each
-// trash key gets cryptographic entropy in the pathname.
-function assertBlobUrl(url: string): void {
-  let parsed: URL;
-  try {
-    parsed = new URL(url);
-  } catch {
-    throw new Error(`Refusing to fetch malformed URL: ${url}`);
-  }
-  if (!parsed.hostname.endsWith(".public.blob.vercel-storage.com")) {
-    throw new Error(`Refusing to fetch non-Blob URL: ${parsed.hostname}`);
-  }
-}
-
-export async function softDeleteBlob(
-  publicUrl: string,
+export async function softDeleteImage(
+  imageUrl: string,
 ): Promise<{ trashUrl: string; trashKey: string }> {
-  assertBlobUrl(publicUrl);
-  const info = await head(publicUrl);
-  const originalPathname = info.pathname;
-  const trashKey = trashKeyFor(originalPathname);
-
-  // Copy bytes into the trash key.
-  const res = await fetch(publicUrl);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ${publicUrl} for soft-delete`);
+  const originalKey = keyFromUrl(imageUrl);
+  if (!originalKey) {
+    throw new Error(`Refusing to trash non-R2 URL: ${imageUrl}`);
   }
-  const buf = Buffer.from(await res.arrayBuffer());
-  const moved = await put(trashKey, buf, {
-    access: "public",
-    // Add an unguessable suffix so external attackers can't enumerate
-    // trash URLs by brute-forcing the deletion timestamp.
-    addRandomSuffix: true,
-    contentType: info.contentType ?? undefined,
-  });
-
-  // Drop the original.
-  await del(publicUrl);
-
-  return { trashUrl: moved.url, trashKey };
+  const trashKey = trashKeyFor(originalKey, Date.now());
+  await r2Copy(originalKey, trashKey);
+  await r2Delete(originalKey);
+  return { trashUrl: publicUrl(trashKey), trashKey };
 }
 
 /**
- * Move an asset back from trash to its original pathname. Returns the
+ * Move an asset back from trash to its original key. Returns the
  * restored public URL.
  */
-export async function restoreBlob(
+export async function restoreImage(
   trashUrl: string,
 ): Promise<{ publicUrl: string }> {
-  assertBlobUrl(trashUrl);
-  const info = await head(trashUrl);
-  const parsed = parseTrashKey(info.pathname);
+  const trashKey = keyFromUrl(trashUrl);
+  if (!trashKey) {
+    throw new Error(`Refusing to restore non-R2 URL: ${trashUrl}`);
+  }
+  const parsed = parseTrashKey(trashKey);
   if (!parsed) {
     throw new Error(`URL is not a trash entry: ${trashUrl}`);
   }
-  const res = await fetch(trashUrl);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ${trashUrl} for restore`);
-  }
-  const buf = Buffer.from(await res.arrayBuffer());
-  const restored = await put(parsed.originalPathname, buf, {
-    access: "public",
-    addRandomSuffix: false,
-    contentType: info.contentType ?? undefined,
-  });
-  await del(trashUrl);
-  return { publicUrl: restored.url };
+  await r2Copy(trashKey, parsed.originalKey);
+  await r2Delete(trashKey);
+  return { publicUrl: publicUrl(parsed.originalKey) };
 }
 
 export type TrashEntry = {
   url: string;
-  pathname: string;
-  originalPathname: string;
+  key: string;
+  originalKey: string;
   deletedAt: string;
   expiresAt: string;
   size: number;
@@ -149,30 +106,27 @@ export type TrashEntry = {
 
 export async function listTrashed(): Promise<TrashEntry[]> {
   // Mark this read as request-time so Next 16 cacheComponents doesn't
-  // try to prerender pages that call us — @vercel/blob's `list()`
-  // internally calls Date.now(), which trips the prerender guard.
+  // try to prerender admin pages that call us — listing reads live
+  // bucket state, never a build-time snapshot.
   const { connection } = await import("next/server");
   await connection();
 
   const out: TrashEntry[] = [];
   let cursor: string | undefined = undefined;
   do {
-    const page: Awaited<ReturnType<typeof list>> = await list({
-      prefix: TRASH_PREFIX,
-      cursor,
-    });
-    for (const blob of page.blobs) {
-      const parsed = parseTrashKey(blob.pathname);
+    const page = await r2List(TRASH_PREFIX, cursor);
+    for (const obj of page.objects) {
+      const parsed = parseTrashKey(obj.key);
       if (!parsed) continue;
       const expiresAt = new Date(parsed.deletedAt);
       expiresAt.setUTCDate(expiresAt.getUTCDate() + TRASH_GRACE_DAYS);
       out.push({
-        url: blob.url,
-        pathname: blob.pathname,
-        originalPathname: parsed.originalPathname,
+        url: publicUrl(obj.key),
+        key: obj.key,
+        originalKey: parsed.originalKey,
         deletedAt: parsed.deletedAt.toISOString(),
         expiresAt: expiresAt.toISOString(),
-        size: blob.size,
+        size: obj.size,
       });
     }
     cursor = page.cursor;
@@ -184,7 +138,7 @@ export async function listTrashed(): Promise<TrashEntry[]> {
 
 /**
  * Physically delete every trash entry whose deletedAt is more than
- * `TRASH_GRACE_DAYS` ago. Returns the URLs that were purged.
+ * `TRASH_GRACE_DAYS` ago. Returns the keys that were purged.
  */
 export async function purgeExpiredTrash(): Promise<{
   purged: string[];
@@ -195,19 +149,20 @@ export async function purgeExpiredTrash(): Promise<{
   let scanned = 0;
   let cursor: string | undefined = undefined;
   do {
-    const page: Awaited<ReturnType<typeof list>> = await list({
-      prefix: TRASH_PREFIX,
-      cursor,
-    });
-    for (const blob of page.blobs) {
+    const page = await r2List(TRASH_PREFIX, cursor);
+    for (const obj of page.objects) {
       scanned++;
-      const parsed = parseTrashKey(blob.pathname);
+      const parsed = parseTrashKey(obj.key);
       if (!parsed) continue;
       if (parsed.deletedAt.getTime() > cutoff) continue;
-      await del(blob.url);
-      purged.push(blob.url);
+      await r2Delete(obj.key);
+      purged.push(obj.key);
     }
     cursor = page.cursor;
   } while (cursor);
   return { purged, scanned };
 }
+
+// Re-exported so callers (admin actions, UI) can validate URLs without
+// importing from two modules.
+export { isOurR2Url };

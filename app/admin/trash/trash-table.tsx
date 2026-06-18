@@ -85,7 +85,7 @@ export function TrashTable({ entries }: { entries: TrashEntry[] }) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate font-mono text-xs text-stone-700 dark:text-stone-200">
-                {entry.originalPathname}
+                {entry.originalKey}
               </p>
               <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
                 Trashed {fmtDate(entry.deletedAt)} · {fmtSize(entry.size)} ·{" "}

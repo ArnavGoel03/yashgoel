@@ -1,13 +1,13 @@
 "use server";
 
 import { z } from "zod";
-import { put } from "@vercel/blob";
 import { updateTag } from "next/cache";
 import { auth } from "@/auth";
 import { commitRepoFile, readRepoFile } from "@/lib/github";
 import { retailerForUrl } from "@/lib/retailers";
 import { normalizeAmazonUrl } from "@/lib/amazon-url";
-import { restoreBlob, softDeleteBlob } from "@/lib/trash";
+import { isOurR2Url, r2Put } from "@/lib/r2";
+import { restoreImage, softDeleteImage } from "@/lib/trash";
 
 /**
  * Belt-and-braces auth guard: middleware already blocks unauthenticated
@@ -40,7 +40,7 @@ async function requireAdmin(): Promise<string | null> {
 
 // Only image MIME types are accepted for product photos. SVG is
 // deliberately excluded (script-in-SVG is a classic stored-XSS vector
-// served straight from a public Blob CDN).
+// served straight from a public CDN).
 const ALLOWED_UPLOAD_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -503,7 +503,7 @@ export async function uploadProductImage(
       error: `Unsupported file type ${file.type || "(unknown)"}. Use JPEG, PNG, WebP, AVIF, or GIF.`,
     };
   }
-  // Cap at 8 MiB so a runaway upload can't chew through Blob quota.
+  // Cap at 8 MiB so a runaway upload can't chew through storage quota.
   const MAX_BYTES = 8 * 1024 * 1024;
   if (file.size > MAX_BYTES) {
     return {
@@ -522,35 +522,22 @@ export async function uploadProductImage(
       .replace(/^-+|-+$/g, "") || "product";
   const key = `products/${base}-${Date.now()}.${ext}`;
   try {
-    const blob = await put(key, file, {
-      access: "public",
-      addRandomSuffix: false,
-      contentType: file.type || undefined,
-    });
-    return { ok: true, url: blob.url };
+    const buf = Buffer.from(await file.arrayBuffer());
+    const { url } = await r2Put(key, buf, file.type || undefined);
+    return { ok: true, url };
   } catch (err) {
     return { ok: false, error: (err as Error).message };
   }
 }
 
-function isOurBlobUrl(url: string): boolean {
-  try {
-    return new URL(url)
-      .hostname.toLowerCase()
-      .endsWith(".public.blob.vercel-storage.com");
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Soft-delete a previously-uploaded product image. The asset is moved
- * to a __trash/<deletedAt-iso>__<originalKey> location in Blob, where
- * a daily cron will physically delete it after a 30-day grace window.
- * Until then it's restorable from /admin/trash.
+ * to a __trash/<deletedAtEpochMs>__<rand>__<originalKey> location in
+ * R2, where a daily cron physically deletes it after a 30-day grace
+ * window. Until then it's restorable from /admin/trash.
  *
  * Returns the new (trash) URL so the admin UI can stash it for an
- * undo flow. Locked to our Blob host so a stray call can't be turned
+ * undo flow. Locked to our R2 origin so a stray call can't be turned
  * into an arbitrary URL fetcher.
  */
 export async function deleteProductImage(
@@ -559,14 +546,14 @@ export async function deleteProductImage(
   const authError = await requireAdmin();
   if (authError) return { ok: false, error: authError };
   if (!url) return { ok: false, error: "No URL provided." };
-  if (!isOurBlobUrl(url)) {
+  if (!isOurR2Url(url)) {
     return {
       ok: false,
-      error: "Only Vercel Blob URLs can be moved to trash from here.",
+      error: "Only our R2 image URLs can be moved to trash from here.",
     };
   }
   try {
-    const { trashUrl } = await softDeleteBlob(url);
+    const { trashUrl } = await softDeleteImage(url);
     return { ok: true, trashUrl };
   } catch (err) {
     return { ok: false, error: (err as Error).message };
@@ -574,9 +561,9 @@ export async function deleteProductImage(
 }
 
 /**
- * Restore a previously soft-deleted asset back to its original
- * pathname. Returns the restored public URL so the admin UI can put it
- * straight back into the form.
+ * Restore a previously soft-deleted asset back to its original key.
+ * Returns the restored public URL so the admin UI can put it straight
+ * back into the form.
  */
 export async function restoreProductImage(
   trashUrl: string,
@@ -584,11 +571,11 @@ export async function restoreProductImage(
   const authError = await requireAdmin();
   if (authError) return { ok: false, error: authError };
   if (!trashUrl) return { ok: false, error: "No URL provided." };
-  if (!isOurBlobUrl(trashUrl)) {
-    return { ok: false, error: "Only Vercel Blob URLs can be restored." };
+  if (!isOurR2Url(trashUrl)) {
+    return { ok: false, error: "Only our R2 image URLs can be restored." };
   }
   try {
-    const { publicUrl } = await restoreBlob(trashUrl);
+    const { publicUrl } = await restoreImage(trashUrl);
     return { ok: true, publicUrl };
   } catch (err) {
     return { ok: false, error: (err as Error).message };
@@ -641,14 +628,10 @@ export async function createPhoto(
 
   let uploadedUrl: string;
   try {
-    const blob = await put(key, file, {
-      access: "public",
-      addRandomSuffix: false,
-      contentType: file.type || undefined,
-    });
-    uploadedUrl = blob.url;
+    const buf = Buffer.from(await file.arrayBuffer());
+    uploadedUrl = (await r2Put(key, buf, file.type || undefined)).url;
   } catch (err) {
-    return { ok: false, error: `Blob upload failed: ${(err as Error).message}` };
+    return { ok: false, error: `R2 upload failed: ${(err as Error).message}` };
   }
 
   const repoPath = "content/photos.json";
@@ -674,7 +657,7 @@ export async function createPhoto(
   } catch (err) {
     return {
       ok: false,
-      error: `Photo uploaded to Blob but commit failed: ${(err as Error).message}`,
+      error: `Photo uploaded to R2 but commit failed: ${(err as Error).message}`,
     };
   }
 
