@@ -1,12 +1,19 @@
-import { CareSymbol, FitSilhouette } from "@/components/garment-icons";
 import {
-  GARMENT_CARE_CODES,
+  CareSymbol,
+  FitSilhouette,
+  hasAstmVariant,
+} from "@/components/garment-icons";
+import {
+  careRegionDetail,
+  GARMENT_CARE_FAMILIES,
   GARMENT_CARE_LABEL,
+  GARMENT_CARE_STANDARD_LABEL,
   GARMENT_CONDITIONS,
   GARMENT_CONDITION_LABEL,
   GARMENT_FITS,
   GARMENT_FIT_LABEL,
 } from "@/lib/garment-types";
+import type { GarmentCareCode } from "@/lib/garment-types";
 
 /**
  * The key to the /fashion section: the four things every entry records
@@ -19,6 +26,49 @@ import {
 const label =
   "font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400 dark:text-stone-500";
 const note = "mt-3 text-xs leading-relaxed text-stone-500 dark:text-stone-400";
+
+/**
+ * One symbol in the key. Where ISO 3758 and ASTM D5489 draw the same
+ * instruction differently, both drawings are shown, GINETEX first,
+ * because that is the one on a label bought in India.
+ */
+function CareKeyRow({ code }: { code: GarmentCareCode }) {
+  const detail = careRegionDetail(code);
+  const dual = hasAstmVariant(code);
+  return (
+    <li className="flex items-start gap-2.5">
+      <span className="flex flex-none items-center gap-1 pt-px">
+        <CareSymbol
+          code={code}
+          className="h-7 w-7 text-stone-700 dark:text-stone-300"
+        />
+        {dual && (
+          <>
+            <span
+              aria-hidden
+              className="h-4 w-px bg-stone-200 dark:bg-stone-700"
+            />
+            <CareSymbol
+              code={code}
+              standard="astm"
+              className="h-7 w-7 text-stone-700 dark:text-stone-300"
+            />
+          </>
+        )}
+      </span>
+      <span className="min-w-0 pt-1">
+        <span className="block text-[11px] leading-tight text-stone-600 dark:text-stone-400">
+          {GARMENT_CARE_LABEL[code]}
+        </span>
+        {detail && (
+          <span className="mt-1 block font-mono text-[9px] uppercase leading-tight tracking-wider text-stone-400 dark:text-stone-500">
+            {detail}
+          </span>
+        )}
+      </span>
+    </li>
+  );
+}
 
 export function GarmentMethod() {
   return (
@@ -70,49 +120,62 @@ export function GarmentMethod() {
             a product page buries.
           </p>
         </div>
+      </div>
 
-        <div>
-          <p className={label}>03, the washing contract</p>
-          <ul className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3">
-            {GARMENT_CARE_CODES.map((code) => (
-              <li key={code} className="flex items-center gap-2.5">
-                <CareSymbol
-                  code={code}
-                  className="h-6 w-6 flex-none text-stone-700 dark:text-stone-300"
-                />
-                <span className="text-[11px] leading-tight text-stone-600 dark:text-stone-400">
-                  {GARMENT_CARE_LABEL[code]}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className={note}>
-            The standard laundry symbols, spelled out. A garment that
-            needs dry cleaning costs more than its price tag, and that
-            belongs in the verdict.
-          </p>
+      <div className="mt-10">
+        <p className={label}>03, the washing contract</p>
+        <p className="mt-3 max-w-3xl text-xs leading-relaxed text-stone-500 dark:text-stone-400">
+          Two standards write the world&rsquo;s care labels and they
+          mostly agree. {GARMENT_CARE_STANDARD_LABEL.iso} covers India,
+          the UK and the EU; {GARMENT_CARE_STANDARD_LABEL.astm} covers
+          the US. Same five shapes, one real difference: America prints
+          temperature as dots where GINETEX prints a number. Rows below
+          showing two symbols are the same instruction drawn both ways,
+          GINETEX first. A line in small type means the symbol is not
+          printed everywhere.
+        </p>
+        <div className="mt-6 grid gap-x-8 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
+          {GARMENT_CARE_FAMILIES.map((family) => (
+            <div key={family.key}>
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-stone-500 dark:text-stone-400">
+                {family.label}
+              </p>
+              <p className="mt-1.5 text-[11px] leading-relaxed text-stone-400 dark:text-stone-500">
+                {family.note}
+              </p>
+              <ul className="mt-4 space-y-3">
+                {family.codes.map((code) => (
+                  <CareKeyRow key={code} code={code} />
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
+        <p className={note}>
+          Every symbol either standard prints, spelled out. A garment
+          that needs dry cleaning costs more than its price tag, and
+          that belongs in the verdict.
+        </p>
+      </div>
 
-        <div>
-          <p className={label}>04, how it has aged</p>
-          <ol className="mt-4 flex items-stretch gap-1">
-            {GARMENT_CONDITIONS.map((stage) => (
-              <li key={stage} className="flex-1">
-                <div className="h-1.5 rounded-full bg-stone-200 dark:bg-stone-800" />
-                <p className="mt-2 text-center font-mono text-[9px] uppercase leading-tight tracking-wider text-stone-500 dark:text-stone-400">
-                  {GARMENT_CONDITION_LABEL[stage]}
-                </p>
-              </li>
-            ))}
-          </ol>
-          <p className={note}>
-            Where the piece sits on the wear track, plus months owned,
-            an honest wears-per-month estimate, and the cost per wear
-            those two produce. Broken in is not a fault on denim and is
-            a fault on a dress shirt, so the track records position, not
-            a score.
-          </p>
-        </div>
+      <div className="mt-10 max-w-2xl">
+        <p className={label}>04, how it has aged</p>
+        <ol className="mt-4 flex items-stretch gap-1">
+          {GARMENT_CONDITIONS.map((stage) => (
+            <li key={stage} className="flex-1">
+              <div className="h-1.5 rounded-full bg-stone-200 dark:bg-stone-800" />
+              <p className="mt-2 text-center font-mono text-[9px] uppercase leading-tight tracking-wider text-stone-500 dark:text-stone-400">
+                {GARMENT_CONDITION_LABEL[stage]}
+              </p>
+            </li>
+          ))}
+        </ol>
+        <p className={note}>
+          Where the piece sits on the wear track, plus months owned, an
+          honest wears-per-month estimate, and the cost per wear those
+          two produce. Broken in is not a fault on denim and is a fault
+          on a dress shirt, so the track records position, not a score.
+        </p>
       </div>
     </section>
   );

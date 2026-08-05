@@ -19,7 +19,16 @@ const STROKE = {
   strokeLinejoin: "round" as const,
 };
 
-/** The GINETEX wash tub, optionally carrying a temperature. */
+/**
+ * The glyph box is 24 wide and 27 tall: the symbol proper occupies the
+ * top 24, and the strip below it is reserved for the cycle bars that
+ * both standards hang under the tub and the tumble-dry square. Drawing
+ * them inside the symbol, as a 24x24 box would force, is what makes
+ * most web renderings of these marks wrong.
+ */
+const VIEW_BOX = "0 0 24 27";
+
+/** The wash tub, optionally carrying a GINETEX temperature numeral. */
 function Tub({ temp }: { temp?: string }) {
   return (
     <>
@@ -61,52 +70,256 @@ function Square() {
 }
 
 function Iron() {
+  return <path d="M3 17.5h18c0-4.4-2.9-7.5-7.2-7.5h-4.2L3 17.5Z" />;
+}
+
+function Triangle() {
+  return <path d="M12 3.6 21 20.4H3Z" />;
+}
+
+function Drum() {
   return (
     <>
-      <path d="M3 17.5h18c0-4.4-2.9-7.5-7.2-7.5h-4.2L3 17.5Z" />
+      <Square />
+      <circle cx="12" cy="12" r="5" />
     </>
   );
 }
 
+/** Professional-care circle, optionally carrying a solvent letter. */
+function ProCircle({ letter }: { letter?: string }) {
+  return (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      {letter && (
+        <text
+          x="12"
+          y="15.3"
+          textAnchor="middle"
+          fontSize="9"
+          stroke="none"
+          fill="currentColor"
+        >
+          {letter}
+        </text>
+      )}
+    </>
+  );
+}
+
+/**
+ * Cycle bars, drawn under the symbol. One bar is the permanent-press
+ * (mild) cycle, two is the gentle (very mild) cycle. Under the
+ * professional circle a single bar means the same thing to a cleaner.
+ */
+function Bars({ n }: { n: 1 | 2 }) {
+  return n === 1 ? (
+    <path d="M6 23.2h12" />
+  ) : (
+    <path d="M6 22.1h12M6 24.7h12" />
+  );
+}
+
+/** Temperature dots, the American way of saying the same thing. */
+function Dots({
+  n,
+  cy,
+  gap = 2.4,
+  r = 0.9,
+}: {
+  n: number;
+  cy: number;
+  gap?: number;
+  r?: number;
+}) {
+  const start = 12 - ((n - 1) * gap) / 2;
+  return (
+    <>
+      {Array.from({ length: n }, (_, i) => (
+        <circle
+          key={i}
+          cx={start + i * gap}
+          cy={cy}
+          r={r}
+          fill="currentColor"
+          stroke="none"
+        />
+      ))}
+    </>
+  );
+}
+
+/** The corner stroke GINETEX adds to mean "keep it out of the sun". */
+function ShadeCorner() {
+  return <path d="M4 10.8 9.8 4.9" />;
+}
+
 const CARE_GLYPH: Record<GarmentCareCode, React.ReactNode> = {
+  // Washing.
   "machine-wash-cold": <Tub temp="30" />,
   "machine-wash-warm": <Tub temp="40" />,
+  "machine-wash-50": <Tub temp="50" />,
+  "machine-wash-hot": <Tub temp="60" />,
+  "machine-wash-70": <Tub temp="70" />,
+  "machine-wash-very-hot": <Tub temp="95" />,
+  "machine-wash-permanent-press": (
+    <>
+      <Tub />
+      <Bars n={1} />
+    </>
+  ),
+  "machine-wash-gentle": (
+    <>
+      <Tub />
+      <Bars n={2} />
+    </>
+  ),
   "hand-wash": (
     <>
       <Tub />
       <Hand />
     </>
   ),
+  "do-not-wash": (
+    <>
+      <Tub />
+      <Forbid />
+    </>
+  ),
+  "do-not-wring": (
+    <>
+      <path d="M4.5 8.5c3 1.2 4.5 2.2 7.5 3.5 3 1.3 4.5 2.3 7.5 3.5" />
+      <path d="M4.5 15.5c3-1.2 4.5-2.2 7.5-3.5 3-1.3 4.5-2.3 7.5-3.5" />
+      <path d="M4.5 8.5v7M19.5 8.5v7" />
+      <Forbid />
+    </>
+  ),
+
+  // Bleaching.
+  "bleach-any": <Triangle />,
+  "bleach-non-chlorine": (
+    <>
+      <Triangle />
+      <path d="M8.8 17 12.6 10.9M11.8 17 15.4 10.9" />
+    </>
+  ),
   "do-not-bleach": (
     <>
-      <path d="M12 3.6 21 20.4H3Z" />
+      <Triangle />
       <Forbid />
+    </>
+  ),
+
+  // Tumble drying.
+  "tumble-dry-any": <Drum />,
+  "tumble-dry-no-heat": (
+    <>
+      <Square />
+      <circle cx="12" cy="12" r="5" fill="currentColor" stroke="none" />
     </>
   ),
   "tumble-dry-low": (
     <>
-      <Square />
-      <circle cx="12" cy="12" r="5" />
-      <circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none" />
+      <Drum />
+      <Dots n={1} cy={12} />
+    </>
+  ),
+  "tumble-dry-medium": (
+    <>
+      <Drum />
+      <Dots n={2} cy={12} />
+    </>
+  ),
+  "tumble-dry-high": (
+    <>
+      <Drum />
+      <Dots n={3} cy={12} />
+    </>
+  ),
+  "tumble-dry-permanent-press": (
+    <>
+      <Drum />
+      <Bars n={1} />
+    </>
+  ),
+  "tumble-dry-gentle": (
+    <>
+      <Drum />
+      <Bars n={2} />
     </>
   ),
   "do-not-tumble-dry": (
     <>
-      <Square />
-      <circle cx="12" cy="12" r="5" />
+      <Drum />
       <Forbid />
     </>
   ),
+
+  // Natural drying.
   "line-dry": (
     <>
       <Square />
       <path d="M12 6.2v11.6" />
     </>
   ),
+  "drip-dry": (
+    <>
+      <Square />
+      <path d="M9.4 6.2v11.6M14.6 6.2v11.6" />
+    </>
+  ),
+  "flat-dry": (
+    <>
+      <Square />
+      <path d="M6.2 12h11.6" />
+    </>
+  ),
+  "line-dry-shade": (
+    <>
+      <Square />
+      <path d="M12 6.2v11.6" />
+      <ShadeCorner />
+    </>
+  ),
+  "drip-dry-shade": (
+    <>
+      <Square />
+      <path d="M9.4 6.2v11.6M14.6 6.2v11.6" />
+      <ShadeCorner />
+    </>
+  ),
+  "flat-dry-shade": (
+    <>
+      <Square />
+      <path d="M6.2 12h11.6" />
+      <ShadeCorner />
+    </>
+  ),
+
+  // Ironing.
   "iron-low": (
     <>
       <Iron />
-      <circle cx="12" cy="14.6" r="0.9" fill="currentColor" stroke="none" />
+      <Dots n={1} cy={14.6} gap={2.8} />
+    </>
+  ),
+  "iron-medium": (
+    <>
+      <Iron />
+      <Dots n={2} cy={14.6} gap={2.8} />
+    </>
+  ),
+  "iron-high": (
+    <>
+      <Iron />
+      <Dots n={3} cy={14.6} gap={2.8} />
+    </>
+  ),
+  "iron-no-steam": (
+    <>
+      <Iron />
+      <path d="M8.6 19.4v2.8M12 19.4v2.8M15.4 19.4v2.8" />
+      <path d="M6.8 23 17.2 18.6" />
     </>
   ),
   "do-not-iron": (
@@ -115,25 +328,116 @@ const CARE_GLYPH: Record<GarmentCareCode, React.ReactNode> = {
       <Forbid />
     </>
   ),
-  "dry-clean": <circle cx="12" cy="12" r="8" />,
+
+  // Professional care.
+  "dry-clean": <ProCircle />,
+  "dry-clean-p": <ProCircle letter="P" />,
+  "dry-clean-p-gentle": (
+    <>
+      <ProCircle letter="P" />
+      <Bars n={1} />
+    </>
+  ),
+  "dry-clean-f": <ProCircle letter="F" />,
+  "dry-clean-f-gentle": (
+    <>
+      <ProCircle letter="F" />
+      <Bars n={1} />
+    </>
+  ),
   "do-not-dry-clean": (
     <>
-      <circle cx="12" cy="12" r="8" />
+      <ProCircle />
+      <Forbid />
+    </>
+  ),
+  "wet-clean": <ProCircle letter="W" />,
+  "wet-clean-gentle": (
+    <>
+      <ProCircle letter="W" />
+      <Bars n={1} />
+    </>
+  ),
+  "do-not-wet-clean": (
+    <>
+      <ProCircle letter="W" />
       <Forbid />
     </>
   ),
 };
 
+/**
+ * The American drawing, for the handful of instructions ASTM D5489
+ * renders differently from ISO 3758. Temperature becomes dots instead
+ * of a numeral, and drip dry gains a third stroke. Anything absent
+ * here is drawn identically under both standards.
+ */
+const CARE_GLYPH_ASTM: Partial<Record<GarmentCareCode, React.ReactNode>> = {
+  "machine-wash-cold": (
+    <>
+      <Tub />
+      <Dots n={1} cy={15.4} gap={2.2} r={0.8} />
+    </>
+  ),
+  "machine-wash-warm": (
+    <>
+      <Tub />
+      <Dots n={2} cy={15.4} gap={2.2} r={0.8} />
+    </>
+  ),
+  "machine-wash-50": (
+    <>
+      <Tub />
+      <Dots n={3} cy={15.4} gap={2.2} r={0.8} />
+    </>
+  ),
+  "machine-wash-hot": (
+    <>
+      <Tub />
+      <Dots n={4} cy={15.4} gap={2.2} r={0.8} />
+    </>
+  ),
+  "machine-wash-70": (
+    <>
+      <Tub />
+      <Dots n={5} cy={15.4} gap={2.2} r={0.8} />
+    </>
+  ),
+  "machine-wash-very-hot": (
+    <>
+      <Tub />
+      <Dots n={6} cy={15.4} gap={2.2} r={0.8} />
+    </>
+  ),
+  "drip-dry": (
+    <>
+      <Square />
+      <path d="M8 6.2v11.6M12 6.2v11.6M16 6.2v11.6" />
+    </>
+  ),
+};
+
+/** Codes the two standards draw differently. */
+export function hasAstmVariant(code: GarmentCareCode): boolean {
+  return code in CARE_GLYPH_ASTM;
+}
+
 export function CareSymbol({
   code,
+  standard = "iso",
   className = "h-6 w-6",
 }: {
   code: GarmentCareCode;
+  /** Which standard's drawing to render. Falls back when they agree. */
+  standard?: "iso" | "astm";
   className?: string;
 }) {
+  const glyph =
+    (standard === "astm" ? CARE_GLYPH_ASTM[code] : undefined) ??
+    CARE_GLYPH[code];
   return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden {...STROKE}>
-      {CARE_GLYPH[code]}
+    <svg viewBox={VIEW_BOX} className={className} aria-hidden {...STROKE}>
+      {glyph}
     </svg>
   );
 }

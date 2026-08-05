@@ -10,7 +10,18 @@ import {
   parseWearDate,
   seasonMonths,
 } from "@/lib/garment";
-import { GARMENT_SEASONS } from "@/lib/garment-types";
+import {
+  careRegionDetail,
+  careRegionSummary,
+  GARMENT_CARE_CODES,
+  GARMENT_CARE_FAMILIES,
+  GARMENT_CARE_LABEL,
+  GARMENT_CARE_REGION_CODES,
+  GARMENT_CARE_REGION_NOTE,
+  GARMENT_CARE_REGIONS,
+  GARMENT_SEASONS,
+  isRegionSpecific,
+} from "@/lib/garment-types";
 import type { Garment } from "@/lib/garment-types";
 
 const NOW = Date.UTC(2026, 7, 5); // 2026-08-05
@@ -145,5 +156,53 @@ describe("seasonMonths", () => {
 
   it("is empty when no season is declared", () => {
     expect(seasonMonths([]).size).toBe(0);
+  });
+});
+
+describe("care vocabulary", () => {
+  it("gives every code a non-empty label", () => {
+    const missing = GARMENT_CARE_CODES.filter(
+      (code) => !GARMENT_CARE_LABEL[code]?.trim(),
+    );
+    expect(missing).toEqual([]);
+  });
+
+  it("sorts every code into exactly one family", () => {
+    const seen = GARMENT_CARE_FAMILIES.flatMap((f) => f.codes);
+    expect([...seen].sort()).toEqual([...GARMENT_CARE_CODES].sort());
+    expect(new Set(seen).size).toBe(seen.length);
+  });
+
+  it("prints every code in at least one real market", () => {
+    const valid = new Set<string>(GARMENT_CARE_REGION_CODES);
+    for (const code of GARMENT_CARE_CODES) {
+      const regions = GARMENT_CARE_REGIONS[code];
+      expect(regions.length, code).toBeGreaterThan(0);
+      expect(regions.every((r) => valid.has(r)), code).toBe(true);
+      expect(new Set(regions).size, code).toBe(regions.length);
+    }
+  });
+
+  it("stays silent about region when a symbol is universal", () => {
+    expect(isRegionSpecific("do-not-bleach")).toBe(false);
+    expect(careRegionSummary("do-not-bleach")).toBe("");
+  });
+
+  it("names the market when a symbol is not universal", () => {
+    expect(careRegionSummary("tumble-dry-high")).toBe("US only");
+    expect(careRegionSummary("line-dry-shade")).toBe("India, UK and EU");
+  });
+
+  it("prefers the divergence note over the bare region list", () => {
+    expect(careRegionDetail("machine-wash-cold")).toContain("one dot in the US");
+    expect(careRegionDetail("tumble-dry-high")).toBe("US only");
+    expect(careRegionDetail("do-not-bleach")).toBe("");
+  });
+
+  it("only annotates codes that exist", () => {
+    const codes = new Set<string>(GARMENT_CARE_CODES);
+    for (const code of Object.keys(GARMENT_CARE_REGION_NOTE)) {
+      expect(codes.has(code), code).toBe(true);
+    }
   });
 });

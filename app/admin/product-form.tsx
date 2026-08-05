@@ -7,7 +7,8 @@ import { ProductPhotoUpload } from "./product-photo-upload";
 import { cn } from "@/lib/utils";
 import { KINDS, KIND_LABEL } from "@/lib/types";
 import {
-  GARMENT_CARE_CODES,
+  careRegionSummary,
+  GARMENT_CARE_FAMILIES,
   GARMENT_CARE_LABEL,
   GARMENT_CONDITIONS,
   GARMENT_CONDITION_LABEL,
@@ -554,18 +555,42 @@ export function ProductForm({ initial }: { initial?: ProductFormInitial }) {
 
           <div>
             <span className={labelCls}>Care symbols</span>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-2 pt-1 text-sm text-stone-700 sm:grid-cols-3">
-              {GARMENT_CARE_CODES.map((code) => (
-                <label key={code} className="flex items-center gap-1.5">
-                  <input
-                    type="checkbox"
-                    name="garmentCare"
-                    value={code}
-                    defaultChecked={initial?.garment?.care?.includes(code)}
-                    className="size-4"
-                  />
-                  {GARMENT_CARE_LABEL[code]}
-                </label>
+            <p className="pb-2 pt-1 text-xs text-stone-500">
+              Grouped the way they sit on a label. Tick only what is
+              actually printed; a US label uses dots where an Indian,
+              British or EU one uses a number, but the instruction is
+              the same, so pick by meaning.
+            </p>
+            <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+              {GARMENT_CARE_FAMILIES.map((family) => (
+                <fieldset key={family.key}>
+                  <legend className="pb-1 font-mono text-[10px] uppercase tracking-wider text-stone-500">
+                    {family.label}
+                  </legend>
+                  <div className="grid grid-cols-1 gap-y-1.5 text-sm text-stone-700">
+                    {family.codes.map((code) => (
+                      <label key={code} className="flex items-start gap-1.5">
+                        <input
+                          type="checkbox"
+                          name="garmentCare"
+                          value={code}
+                          defaultChecked={initial?.garment?.care?.includes(
+                            code,
+                          )}
+                          className="mt-0.5 size-4 flex-none"
+                        />
+                        <span>
+                          {GARMENT_CARE_LABEL[code]}
+                          {careRegionSummary(code) && (
+                            <span className="block font-mono text-[10px] uppercase tracking-wider text-stone-400">
+                              {careRegionSummary(code)}
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
               ))}
             </div>
           </div>
