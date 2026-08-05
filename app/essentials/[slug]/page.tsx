@@ -8,6 +8,7 @@ import { ReviewMeta } from "@/components/review-meta";
 import { RatingAxes } from "@/components/rating-axes";
 import { ReviewChangelog } from "@/components/review-changelog";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { DraftBanner } from "@/components/draft-banner";
 import { ProsCons } from "@/components/pros-cons";
 import { ReaderNote } from "@/components/reader-note";
 import { RelatedReviews } from "@/components/related-reviews";
@@ -17,7 +18,12 @@ import { MdxContent } from "@/components/mdx-content";
 import { ContinueReading } from "@/components/continue-reading";
 import { IngredientChips } from "@/components/ingredient-chips";
 import { ReviewJsonLd } from "@/components/json-ld";
-import { getAdjacentReviews, getPrimersForProduct, getReview, getReviews } from "@/lib/content";
+import {
+  getAdjacentReviews,
+  getAllReviewsIncludingHidden,
+  getPrimersForProduct,
+  getReview,
+} from "@/lib/content";
 import { RelatedPrimers } from "@/components/related-primers";
 import { TocNav } from "@/components/toc-nav";
 import { PrevNext } from "@/components/prev-next";
@@ -28,8 +34,13 @@ import { brandTextColor } from "@/lib/retailers";
 
 type Props = { params: Promise<{ slug: string }> };
 
+// Every MDX file in this folder gets a prerendered page, including
+// drafts (`hidden: true`) and retired entries. `getReviews()` is the
+// wrong set here: it drops those and adds cross-listed guests whose
+// canonical URL lives under another kind. With Cache Components an
+// empty result also fails the build outright.
 export async function generateStaticParams() {
-  return getReviews("essentials").map((r) => ({ slug: r.slug }));
+  return getAllReviewsIncludingHidden("essentials").map((r) => ({ slug: r.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -41,6 +52,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${review.name} by ${review.brand}`,
     description,
     alternates: { canonical: `/essentials/${review.slug}` },
+    // Drafts stay reachable by URL but must never be indexed or
+    // surfaced as a finished review.
+    robots: review.hidden ? { index: false, follow: false } : undefined,
     openGraph: {
       type: "article",
       title: `${review.name} by ${review.brand}`,
@@ -81,6 +95,8 @@ export default async function EssentialsReviewPage({ params }: Props) {
           </Link>
           <CopyLink path={`/essentials/${review.slug}`} />
         </div>
+
+        {review.hidden && <DraftBanner />}
 
         <header className="mt-8 border-b border-stone-200 pb-10 dark:border-stone-800">
           <p className="mb-3 text-xs uppercase tracking-[0.2em]">

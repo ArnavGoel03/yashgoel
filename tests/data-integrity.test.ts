@@ -17,12 +17,19 @@ import {
 import { findUVFilter } from "@/lib/uv-filters";
 import { GLOSSARY, findGlossaryEntry } from "@/lib/glossary";
 import { getLibrary } from "@/lib/library";
+import { KINDS, KIND_LABEL } from "@/lib/types";
+import {
+  GARMENT_CARE_CODES,
+  GARMENT_CONDITIONS,
+  GARMENT_FITS,
+  GARMENT_SEASONS,
+} from "@/lib/garment-types";
 import type { Kind, ReviewSummary } from "@/lib/types";
 
 /**
  * Whole-catalog data-integrity gate.
  *
- * Why this exists: the site is content-first — every review and primer
+ * Why this exists: the site is content-first: every review and primer
  * is a strict-schema MDX file, and the cross-references between them
  * (cross-listing, related primers, glossary ↔ primer links, retailer
  * hosts, regional buy links) are all data the build trusts. When that
@@ -37,15 +44,9 @@ import type { Kind, ReviewSummary } from "@/lib/types";
  * for the referential checks.
  */
 
-const ALL_KINDS: Kind[] = [
-  "skincare",
-  "supplements",
-  "oral-care",
-  "hair-care",
-  "body-care",
-  "essentials",
-  "miscellaneous",
-];
+// Derived, never re-spelled: lib/types.ts owns the list, so a new kind
+// is covered by every check below the moment it is declared there.
+const ALL_KINDS: Kind[] = [...KINDS];
 
 const CONTENT_ROOT = path.join(process.cwd(), "content");
 
@@ -70,7 +71,7 @@ const ALL_REVIEWS: ReviewSummary[] = ALL_KINDS.flatMap((k) =>
 const SLUGS_BY_NAME = new Set(ALL_REVIEWS.map((r) => r.slug));
 
 // ────────────────────────────────────────────────────────────────────
-// 1. Schema validation — every file in every kind + primers parses.
+// 1. Schema validation, every file in every kind + primers parses.
 // ────────────────────────────────────────────────────────────────────
 
 describe("review frontmatter parses for every kind", () => {
@@ -83,7 +84,7 @@ describe("review frontmatter parses for every kind", () => {
         try {
           data = matter(raw).data;
         } catch (e) {
-          failures.push(`${path.basename(file)}: YAML parse error — ${e}`);
+          failures.push(`${path.basename(file)}: YAML parse error, ${e}`);
           continue;
         }
         const parsed = reviewFrontmatter.safeParse(data);
@@ -109,7 +110,7 @@ describe("primer frontmatter parses", () => {
       try {
         data = matter(raw).data;
       } catch (e) {
-        failures.push(`${path.basename(file)}: YAML parse error — ${e}`);
+        failures.push(`${path.basename(file)}: YAML parse error, ${e}`);
         continue;
       }
       const parsed = primerFrontmatter.safeParse(data);
@@ -359,7 +360,7 @@ describe("content JSON data files", () => {
 
   it("no gallery photo serves its PRIMARY src from the rate-limited r2.dev domain", () => {
     // Cloudflare's `pub-*.r2.dev` public *development* URL is
-    // rate-limited and gets disabled (returns 401) without warning —
+    // rate-limited and gets disabled (returns 401) without warning,
     // this is what blanked the homepage hero + /photos. Primary `src`
     // must point at a reliable host (GitHub Releases /
     // objects.githubusercontent.com, a custom R2 domain, or Vercel
@@ -374,7 +375,7 @@ describe("content JSON data files", () => {
       .map((p: { src: string }) => p.src);
     expect(
       offenders,
-      `These photos use the rate-limited r2.dev dev URL as their primary src — move it to srcFallback:\n${offenders.join("\n")}`,
+      `These photos use the rate-limited r2.dev dev URL as their primary src, move it to srcFallback:\n${offenders.join("\n")}`,
     ).toEqual([]);
   });
 
@@ -386,5 +387,107 @@ describe("content JSON data files", () => {
       expect(typeof item.title).toBe("string");
       expect(["current", "finished", "abandoned"]).toContain(item.status);
     }
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────
+// 11. Kind wiring. A kind declared in lib/types.ts must have both of
+//     its routes on disk, or the nav/sitemap/homepage link to a 404.
+// ────────────────────────────────────────────────────────────────────
+
+describe("every kind is fully wired", () => {
+  it("has a listing route and a detail route", () => {
+    const missing: string[] = [];
+    for (const kind of ALL_KINDS) {
+      const listing = path.join(process.cwd(), "app", kind, "page.tsx");
+      const detail = path.join(process.cwd(), "app", kind, "[slug]", "page.tsx");
+      if (!fs.existsSync(listing)) missing.push(`app/${kind}/page.tsx`);
+      if (!fs.existsSync(detail)) missing.push(`app/${kind}/[slug]/page.tsx`);
+    }
+    expect(missing, missing.join("\n")).toEqual([]);
+  });
+
+  it("has a display label", () => {
+    for (const kind of ALL_KINDS) {
+      expect(KIND_LABEL[kind]?.length, `no label for ${kind}`).toBeGreaterThan(0);
+    }
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────
+// 12. Garment data. Fashion entries carry structured wear data that
+//     the detail page draws rather than describes, so a missing or
+//     self-contradicting field is a rendering bug, not a typo.
+// ────────────────────────────────────────────────────────────────────
+
+describe("garment data", () => {
+  const fashion = ALL_REVIEWS.filter((r) => r.kind === "fashion");
+
+  it("every fashion entry carries a garment block", () => {
+    const bad = fashion.filter((r) => !r.garment).map((r) => r.slug);
+    expect(bad, `fashion entries missing garment: ${bad.join(", ")}`).toEqual(
+      [],
+    );
+  });
+
+  it("no non-fashion entry carries a garment block", () => {
+    const bad = ALL_REVIEWS.filter(
+      (r) => r.kind !== "fashion" && r.garment,
+    ).map((r) => `${r.kind}/${r.slug}`);
+    expect(bad, bad.join(", ")).toEqual([]);
+  });
+
+  it("uses only the canonical fit, condition, care and season values", () => {
+    const bad: string[] = [];
+    for (const r of fashion) {
+      const g = r.garment;
+      if (!g) continue;
+      const id = `fashion/${r.slug}`;
+      if (!GARMENT_FITS.includes(g.fit)) bad.push(`${id}: fit ${g.fit}`);
+      if (!GARMENT_CONDITIONS.includes(g.condition)) {
+        bad.push(`${id}: condition ${g.condition}`);
+      }
+      for (const c of g.care) {
+        if (!GARMENT_CARE_CODES.includes(c)) bad.push(`${id}: care ${c}`);
+      }
+      for (const s of g.season) {
+        if (!GARMENT_SEASONS.includes(s)) bad.push(`${id}: season ${s}`);
+      }
+    }
+    expect(bad, bad.join("\n")).toEqual([]);
+  });
+
+  it("fabric percentages add up to 100", () => {
+    const bad: string[] = [];
+    for (const r of fashion) {
+      const fabric = r.garment?.fabric ?? [];
+      if (fabric.length === 0) continue;
+      const total = fabric.reduce((sum, f) => sum + f.percent, 0);
+      if (Math.abs(total - 100) > 0.01) {
+        bad.push(`fashion/${r.slug}: ${total}%`);
+      }
+    }
+    expect(bad, bad.join("\n")).toEqual([]);
+  });
+
+  it("wear dates are ISO and the aging log never predates the first wear", () => {
+    const bad: string[] = [];
+    for (const r of fashion) {
+      const g = r.garment;
+      if (!g) continue;
+      const id = `fashion/${r.slug}`;
+      if (!ISO_DAY_OR_MONTH.test(g.firstWorn)) {
+        bad.push(`${id}: firstWorn "${g.firstWorn}"`);
+        continue;
+      }
+      for (const entry of g.aging) {
+        if (!ISO_DAY_OR_MONTH.test(entry.date)) {
+          bad.push(`${id}: aging date "${entry.date}"`);
+        } else if (entry.date.slice(0, 7) < g.firstWorn.slice(0, 7)) {
+          bad.push(`${id}: aging ${entry.date} predates ${g.firstWorn}`);
+        }
+      }
+    }
+    expect(bad, bad.join("\n")).toEqual([]);
   });
 });

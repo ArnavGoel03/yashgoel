@@ -1,5 +1,6 @@
 import { getPrimers, getReviews } from "@/lib/content";
 import { site } from "@/lib/site";
+import { KIND_LABEL, KINDS, kindPath } from "@/lib/types";
 
 // Stored review/primer fields (name, brand, title, subtitle) are bare
 // strings, a `]`, `)`, backtick, or newline in any of them would break
@@ -43,15 +44,11 @@ export async function GET(): Promise<Response> {
 
   lines.push("## Categories");
   lines.push("");
-  const cats = [
-    { kind: "skincare" as const, label: "Skincare", path: "/skincare" },
-    { kind: "supplements" as const, label: "Supplements", path: "/supplements" },
-    { kind: "oral-care" as const, label: "Oral care", path: "/oral-care" },
-    { kind: "hair-care" as const, label: "Hair care", path: "/hair-care" },
-    { kind: "body-care" as const, label: "Body care", path: "/body-care" },
-    { kind: "essentials" as const, label: "Essentials", path: "/essentials" },
-    { kind: "miscellaneous" as const, label: "Miscellaneous", path: "/miscellaneous" },
-  ];
+  const cats = KINDS.map((kind) => ({
+    kind,
+    label: KIND_LABEL[kind],
+    path: kindPath(kind),
+  }));
   for (const c of cats) {
     const items = getReviews(c.kind);
     lines.push(`- [${c.label}](${site.url}${c.path}), ${items.length} reviews`);

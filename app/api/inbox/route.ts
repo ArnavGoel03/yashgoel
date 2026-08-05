@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { commitRepoFile, readRepoFile } from "@/lib/github";
 import { createLimiter } from "@/lib/rate-limit";
+import { isKind } from "@/lib/types";
 
 /**
  * Private reader-feedback inbox. Submissions land in
@@ -47,16 +48,6 @@ type Body = {
   companion?: unknown;
 };
 
-const VALID_KINDS = new Set([
-  "skincare",
-  "supplements",
-  "oral-care",
-  "hair-care",
-  "body-care",
-  "essentials",
-  "miscellaneous",
-]);
-
 // Upstash-backed when configured; per-instance Map fallback otherwise.
 // 4 submissions/min/IP.
 const limit = createLimiter({ name: "inbox", max: 4, windowSeconds: 60 });
@@ -93,7 +84,7 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   const kind = typeof body.kind === "string" ? body.kind : "";
   const slug = typeof body.slug === "string" ? body.slug : "";
-  if (!VALID_KINDS.has(kind) || !/^[a-z0-9-]{2,120}$/.test(slug)) {
+  if (!isKind(kind) || !/^[a-z0-9-]{2,120}$/.test(slug)) {
     return NextResponse.json(
       { error: "Unknown product reference." },
       { status: 400 },

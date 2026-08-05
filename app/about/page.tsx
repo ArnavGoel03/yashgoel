@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Container } from "@/components/container";
 import { FaqJsonLd } from "@/components/json-ld";
 import { site } from "@/lib/site";
+import { KIND_LABEL, KINDS, kindPath } from "@/lib/types";
 
 // FAQ list, mirrored to JSON-LD so the answers are eligible for
 // featured snippets and AI-search citations. Keep questions phrased
@@ -19,7 +21,7 @@ const faqs: { question: string; answer: string }[] = [
   },
   {
     question: `What categories does ${site.name} cover?`,
-    answer: "Seven product categories: skincare, supplements, oral care, hair care (split into Treatment and Styling), body care, essentials (the cornerstone daily-life devices like the laptop and earbuds), and miscellaneous (random utility objects, gadgets, accessories). Plus /routine for what I actually do in order, /primers for ingredient-level reference pages, /photos for DSLR shots, and /now for what is on the shelf this month.",
+    answer: "Eight product categories: skincare, supplements, oral care, hair care (split into Treatment and Styling), body care, essentials (the cornerstone daily-life devices like the laptop and earbuds), miscellaneous (random utility objects, gadgets, accessories), and fashion (clothes, judged on fit, fabric, care and how they age). Plus /routine for what I actually do in order, /primers for ingredient-level reference pages, /photos for DSLR shots, and /now for what is on the shelf this month.",
   },
   {
     question: "How does the rating system work?",
@@ -77,9 +79,9 @@ export default function AboutPage() {
         <p>
           I live in {site.location}. This is the corner of the internet where
           I write about the products I actually use, skincare, supplements,
-          oral care, hair care, body care, essentials, and the small
-          miscellaneous things in between, plus the photos I make on the
-          side. Slower than a feed. More honest than a sponsored review.
+          oral care, hair care, body care, essentials, clothes, and the
+          small miscellaneous things in between, plus the photos I make on
+          the side. Slower than a feed. More honest than a sponsored review.
         </p>
 
         <SectionLabel num="01" label="The rules I write by" />
@@ -240,9 +242,12 @@ export default function AboutPage() {
             Favourite chocolate
           </dt>
           <dd className="text-stone-700 dark:text-stone-300">
-            <a href="/miscellaneous/toblerone-milk-chocolate" className={linkClass}>
+            <Link
+              href="/miscellaneous/toblerone-milk-chocolate"
+              className={linkClass}
+            >
               Toblerone Original
-            </a>
+            </Link>
             . The triangle, the honey-almond nougat, available at every
             airport in the world. Not the most refined chocolate on the shelf;
             still the one I reach for.
@@ -269,25 +274,27 @@ export default function AboutPage() {
 
         <SectionLabel num="07" label="Sections" />
         <p>
-          <a href="/skincare" className={linkClass}>Skincare</a>,{" "}
-          <a href="/supplements" className={linkClass}>supplements</a>,{" "}
-          <a href="/oral-care" className={linkClass}>oral care</a>,{" "}
-          <a href="/hair-care" className={linkClass}>hair care</a>,{" "}
-          <a href="/body-care" className={linkClass}>body care</a>,{" "}
-          <a href="/essentials" className={linkClass}>essentials</a>, and{" "}
-          <a href="/miscellaneous" className={linkClass}>miscellaneous</a>, the
-          reviews.{" "}
-          <a href="/routine" className={linkClass}>Routine</a> for what I
+          {KINDS.map((kind, i) => (
+            <span key={kind}>
+              <Link href={kindPath(kind)} className={linkClass}>
+                {i === 0 ? KIND_LABEL[kind] : KIND_LABEL[kind].toLowerCase()}
+              </Link>
+              {i < KINDS.length - 1 ? ", " : ", the reviews. "}
+              {i === KINDS.length - 2 ? "and " : ""}
+            </span>
+          ))}
+          <Link href="/routine" className={linkClass}>Routine</Link> for what I
           actually do, in order. {" "}
-          <a href="/primers" className={linkClass}>Primers</a> for ingredient
-          and stack reference pages.{" "}
-          <a href="/photos" className={linkClass}>Photos</a> for DSLR shots.{" "}
-          <a href="/now" className={linkClass}>Now</a> for what&apos;s on the
-          shelf this month.{" "}
-          <a href="/subscribe" className={linkClass}>Subscribe</a> if you want
-          new reviews in your inbox the day they ship.{" "}
-          <a href="/links" className={linkClass}>Links</a> if you want to find
-          me elsewhere.
+          <Link href="/primers" className={linkClass}>Primers</Link> for
+          ingredient and stack reference pages.{" "}
+          <Link href="/photos" className={linkClass}>Photos</Link> for DSLR
+          shots.{" "}
+          <Link href="/now" className={linkClass}>Now</Link> for what&apos;s on
+          the shelf this month.{" "}
+          <Link href="/subscribe" className={linkClass}>Subscribe</Link> if you
+          want new reviews in your inbox the day they ship.{" "}
+          <Link href="/links" className={linkClass}>Links</Link> if you want to
+          find me elsewhere.
         </p>
 
         <SectionLabel num="08" label="Frequently asked" />
@@ -325,9 +332,9 @@ export default function AboutPage() {
         <SectionLabel num="10" label="Get in touch" />
         <p>
           Email or any of the socials on the{" "}
-          <a href="/links" className={linkClass}>
+          <Link href="/links" className={linkClass}>
             links page
-          </a>
+          </Link>
           . I read everything; I reply to most things.
         </p>
       </div>

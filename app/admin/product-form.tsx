@@ -5,6 +5,19 @@ import Link from "next/link";
 import { createReview, updateReview, type ActionState } from "./actions";
 import { ProductPhotoUpload } from "./product-photo-upload";
 import { cn } from "@/lib/utils";
+import { KINDS, KIND_LABEL } from "@/lib/types";
+import {
+  GARMENT_CARE_CODES,
+  GARMENT_CARE_LABEL,
+  GARMENT_CONDITIONS,
+  GARMENT_CONDITION_LABEL,
+  GARMENT_FITS,
+  GARMENT_FIT_LABEL,
+  GARMENT_SEASONS,
+  GARMENT_SEASON_LABEL,
+} from "@/lib/garment-types";
+import type { Kind } from "@/lib/types";
+import type { Garment } from "@/lib/garment-types";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -53,7 +66,7 @@ function Optional() {
 
 export type ProductFormInitial = {
   slug: string;
-  kind: "skincare" | "supplements" | "oral-care" | "hair-care" | "body-care" | "essentials" | "miscellaneous";
+  kind: Kind;
   name: string;
   brand: string;
   category: string;
@@ -74,6 +87,7 @@ export type ProductFormInitial = {
   westernLinks?: { retailer: string; url: string }[];
   ukLinks?: { retailer: string; url: string }[];
   ingredients?: string[];
+  garment?: Garment;
   pros: string[];
   cons: string[];
   repurchase?: boolean;
@@ -88,9 +102,7 @@ export function ProductForm({ initial }: { initial?: ProductFormInitial }) {
     isEdit ? updateReview : createReview,
     null,
   );
-  const [kind, setKind] = useState<
-    "skincare" | "supplements" | "oral-care" | "hair-care" | "body-care" | "essentials" | "miscellaneous"
-  >(initial?.kind ?? "skincare");
+  const [kind, setKind] = useState<Kind>(initial?.kind ?? "skincare");
   const [brand, setBrand] = useState(initial?.brand ?? "");
   const [name, setName] = useState(initial?.name ?? "");
 
@@ -111,31 +123,21 @@ export function ProductForm({ initial }: { initial?: ProductFormInitial }) {
         <div>
           <span className={labelCls}>Kind</span>
           <div className="flex flex-wrap gap-2">
-            {(
-              [
-                { value: "skincare", label: "Skincare" },
-                { value: "supplements", label: "Supplements" },
-                { value: "oral-care", label: "Oral care" },
-                { value: "hair-care", label: "Hair care" },
-                { value: "body-care", label: "Body care" },
-                { value: "essentials", label: "Essentials" },
-                { value: "miscellaneous", label: "Miscellaneous" },
-              ] as const
-            ).map((k) => (
+            {KINDS.map((k) => (
               <button
-                key={k.value}
+                key={k}
                 type="button"
-                onClick={() => !isEdit && setKind(k.value)}
+                onClick={() => !isEdit && setKind(k)}
                 disabled={isEdit}
                 className={cn(
                   "rounded-full border px-4 py-1.5 text-sm transition-colors",
-                  kind === k.value
+                  kind === k
                     ? "border-stone-900 bg-stone-900 text-white"
                     : "border-stone-200 bg-white text-stone-600 hover:border-stone-300",
                   isEdit && "cursor-not-allowed opacity-60",
                 )}
               >
-                {k.label}
+                {KIND_LABEL[k]}
               </button>
             ))}
           </div>
@@ -185,7 +187,9 @@ export function ProductForm({ initial }: { initial?: ProductFormInitial }) {
                   ? "cleanser"
                   : kind === "supplements"
                     ? "mineral"
-                    : "electric toothbrush"
+                    : kind === "fashion"
+                      ? "shirt"
+                      : "electric toothbrush"
               }
               required
               className={inputCls}
@@ -461,6 +465,187 @@ export function ProductForm({ initial }: { initial?: ProductFormInitial }) {
         </label>
       </Section>
 
+
+      {kind === "fashion" && (
+        <Section
+          title="Garment"
+          description="What a shirt has that a bottle doesn't. Drawn as diagrams on the page, so keep it as data, not prose."
+        >
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="garmentFit" className={labelCls}>Fit</label>
+              <select
+                id="garmentFit"
+                name="garmentFit"
+                defaultValue={initial?.garment?.fit ?? "regular"}
+                className={inputCls}
+              >
+                {GARMENT_FITS.map((f) => (
+                  <option key={f} value={f}>
+                    {GARMENT_FIT_LABEL[f]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="garmentCondition" className={labelCls}>
+                Condition now
+              </label>
+              <select
+                id="garmentCondition"
+                name="garmentCondition"
+                defaultValue={initial?.garment?.condition ?? "as-new"}
+                className={inputCls}
+              >
+                {GARMENT_CONDITIONS.map((c) => (
+                  <option key={c} value={c}>
+                    {GARMENT_CONDITION_LABEL[c]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="garmentSize" className={labelCls}>
+                Size as labelled
+              </label>
+              <input
+                id="garmentSize"
+                name="garmentSize"
+                defaultValue={initial?.garment?.size ?? ""}
+                placeholder="M, 32x32, 40 EU"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label htmlFor="garmentSizeNote" className={labelCls}>
+                How it ran <Optional />
+              </label>
+              <input
+                id="garmentSizeNote"
+                name="garmentSizeNote"
+                defaultValue={initial?.garment?.sizeNote ?? ""}
+                placeholder="Runs one size small in the shoulder"
+                className={inputCls}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="garmentFabric" className={labelCls}>
+              Fabric
+            </label>
+            <input
+              id="garmentFabric"
+              name="garmentFabric"
+              defaultValue={(initial?.garment?.fabric ?? [])
+                .map((f) => `${f.material} ${f.percent}`)
+                .join(", ")}
+              placeholder="Cotton 98, Elastane 2"
+              className={inputCls}
+            />
+            <p className="mt-1 text-xs text-stone-500">
+              Comma separated, copied off the label. Percentages must add
+              up to 100.
+            </p>
+          </div>
+
+          <div>
+            <span className={labelCls}>Care symbols</span>
+            <div className="grid grid-cols-1 gap-x-4 gap-y-2 pt-1 text-sm text-stone-700 sm:grid-cols-3">
+              {GARMENT_CARE_CODES.map((code) => (
+                <label key={code} className="flex items-center gap-1.5">
+                  <input
+                    type="checkbox"
+                    name="garmentCare"
+                    value={code}
+                    defaultChecked={initial?.garment?.care?.includes(code)}
+                    className="size-4"
+                  />
+                  {GARMENT_CARE_LABEL[code]}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className={labelCls}>Wearable window</span>
+            <div className="flex flex-wrap gap-4 pt-1 text-sm text-stone-700">
+              {GARMENT_SEASONS.map((season) => (
+                <label key={season} className="flex items-center gap-1.5">
+                  <input
+                    type="checkbox"
+                    name="garmentSeason"
+                    value={season}
+                    defaultChecked={initial?.garment?.season?.includes(season)}
+                    className="size-4"
+                  />
+                  {GARMENT_SEASON_LABEL[season]}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="garmentFirstWorn" className={labelCls}>
+                First worn
+              </label>
+              <input
+                id="garmentFirstWorn"
+                name="garmentFirstWorn"
+                defaultValue={initial?.garment?.firstWorn ?? ""}
+                placeholder="2026-01 or 2026-01-14"
+                className={inputCls}
+              />
+              <p className="mt-1 text-xs text-stone-500">
+                Anchors months owned and cost per wear.
+              </p>
+            </div>
+            <div>
+              <label htmlFor="garmentWearsPerMonth" className={labelCls}>
+                Wears per month <Optional />
+              </label>
+              <input
+                id="garmentWearsPerMonth"
+                name="garmentWearsPerMonth"
+                type="number"
+                step="0.5"
+                min="0.5"
+                max="31"
+                defaultValue={initial?.garment?.wearsPerMonth ?? ""}
+                placeholder="8"
+                className={inputCls}
+              />
+              <p className="mt-1 text-xs text-stone-500">
+                Honest estimate. Cost per wear stays hidden without it.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="garmentAging" className={labelCls}>
+              How it has aged <Optional />
+            </label>
+            <textarea
+              id="garmentAging"
+              name="garmentAging"
+              rows={4}
+              defaultValue={(initial?.garment?.aging ?? [])
+                .map((a) => `${a.date} | ${a.note}`)
+                .join("\n")}
+              placeholder={"2026-03 | First honeycombs behind the knee\n2026-06 | Collar still holding shape"}
+              className={textareaCls}
+            />
+            <p className="mt-1 text-xs text-stone-500">
+              One dated observation per line: date, pipe, note.
+            </p>
+          </div>
+        </Section>
+      )}
+
       <Section
         title="Photo"
         description="Drop an image here. Stored at original quality."
@@ -580,7 +765,7 @@ export function ProductForm({ initial }: { initial?: ProductFormInitial }) {
           <p className="mt-1 text-xs text-stone-500">
             One URL per line. Retailer name is auto-detected from the domain;
             override with <code>Retailer | URL</code>. Paste raw Amazon URLs
-            from the address bar — they get auto-stripped to the clean{" "}
+            from the address bar, they get auto-stripped to the clean{" "}
             <code>/dp/&lt;ASIN&gt;</code> form, and the affiliate tag is
             applied at render time. No SiteStripe round-trip needed.
           </p>

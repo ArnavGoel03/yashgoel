@@ -7,15 +7,12 @@ import { Container } from "@/components/container";
 import { PageHeading } from "@/components/page-heading";
 import { ProductForm } from "../../../product-form";
 import { getReview } from "@/lib/content";
-import type { Kind } from "@/lib/types";
+import { isKind } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Edit review",
   robots: { index: false, follow: false },
 };
-
-
-const VALID_KINDS: Kind[] = ["skincare", "supplements", "oral-care", "hair-care", "body-care", "essentials", "miscellaneous"];
 
 type Props = { params: Promise<{ kind: string; slug: string }> };
 
@@ -37,8 +34,8 @@ async function requireAdminEmail(): Promise<void> {
 export default async function EditReviewPage({ params }: Props) {
   await requireAdminEmail();
   const { kind, slug } = await params;
-  if (!VALID_KINDS.includes(kind as Kind)) notFound();
-  const review = getReview(kind as Kind, slug);
+  if (!isKind(kind)) notFound();
+  const review = getReview(kind, slug);
   if (!review) notFound();
 
   return (
@@ -92,6 +89,7 @@ export default async function EditReviewPage({ params }: Props) {
               westernLinks: review.westernLinks,
               ukLinks: review.ukLinks,
               ingredients: review.ingredients,
+              garment: review.garment,
               pros: review.pros,
               cons: review.cons,
               repurchase: review.repurchase,

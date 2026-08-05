@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { primerFrontmatter, reviewFrontmatter } from "./schema";
+import { KINDS } from "./types";
 import type {
   Kind,
   Primer,
@@ -125,17 +126,8 @@ function sortByScore<T extends Rankable>(list: T[]): T[] {
  */
 export function getReviews(kind: Kind): ReviewSummary[] {
   const native = readReviews(kind);
-  const crossKinds: Kind[] = [
-    "skincare",
-    "supplements",
-    "oral-care",
-    "hair-care",
-    "body-care",
-    "essentials",
-    "miscellaneous",
-  ];
   const guest: Review[] = [];
-  for (const k of crossKinds) {
+  for (const k of KINDS) {
     if (k === kind) continue;
     for (const r of readReviews(k)) {
       if (r.crossList?.includes(kind)) guest.push(r);
@@ -148,13 +140,7 @@ export function getReviews(kind: Kind): ReviewSummary[] {
 
 export function getRetiredReviews(): ReviewSummary[] {
   return sortByDateDesc([
-    ...readReviews("skincare"),
-    ...readReviews("supplements"),
-    ...readReviews("oral-care"),
-    ...readReviews("hair-care"),
-    ...readReviews("body-care"),
-    ...readReviews("essentials"),
-    ...readReviews("miscellaneous"),
+    ...KINDS.flatMap((k) => readReviews(k)),
   ])
     .filter((r) => r.retired && !r.hidden)
     .map(({ body: _body, ...rest }) => rest);
@@ -169,13 +155,7 @@ export function getAllReviews(): ReviewSummary[] {
   // appear once in the global union, by their canonical kind, where
   // they actually live on disk, instead of once per surfaced section.
   return sortByDateDesc([
-    ...readReviews("skincare"),
-    ...readReviews("supplements"),
-    ...readReviews("oral-care"),
-    ...readReviews("hair-care"),
-    ...readReviews("body-care"),
-    ...readReviews("essentials"),
-    ...readReviews("miscellaneous"),
+    ...KINDS.flatMap((k) => readReviews(k)),
   ])
     .filter((r) => !r.hidden && !r.retired)
     .map(({ body: _body, ...rest }) => rest);
@@ -189,13 +169,7 @@ export function getAllReviews(): ReviewSummary[] {
  */
 export function getAllReviewsWithBody(): Review[] {
   return sortByDateDesc([
-    ...readReviews("skincare"),
-    ...readReviews("supplements"),
-    ...readReviews("oral-care"),
-    ...readReviews("hair-care"),
-    ...readReviews("body-care"),
-    ...readReviews("essentials"),
-    ...readReviews("miscellaneous"),
+    ...KINDS.flatMap((k) => readReviews(k)),
   ]).filter((r) => !r.hidden && !r.retired);
 }
 

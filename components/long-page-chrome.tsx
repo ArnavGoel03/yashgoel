@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { ReadingProgress } from "@/components/reading-progress";
 import { BackToTop } from "@/components/back-to-top";
+import { KINDS, kindPath } from "@/lib/types";
 
 // Pathname prefixes that warrant the long-page chrome (top reading
 // progress bar + back-to-top FAB). Anything not in this list (home,
@@ -14,13 +15,9 @@ const LONG_PREFIXES = [
   "/watching/",
   "/photos",
   "/routine/",
-  "/skincare/",
-  "/supplements/",
-  "/oral-care/",
-  "/hair-care/",
-  "/body-care/",
-  "/essentials/",
-  "/miscellaneous/",
+  // Every review detail page, derived so a new kind is covered the
+  // day it ships.
+  ...KINDS.map((kind) => `${kindPath(kind)}/`),
 ];
 
 function isLong(path: string): boolean {

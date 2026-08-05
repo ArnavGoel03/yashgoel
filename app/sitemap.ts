@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getPrimers, getReviews } from "@/lib/content";
 import { getRoutinesList, getSubroutinesList } from "@/lib/routines";
 import { site } from "@/lib/site";
+import { KINDS, kindPath } from "@/lib/types";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -10,18 +11,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${site.url}/about`, lastModified: now, priority: 0.8 },
     { url: `${site.url}/now`, lastModified: now, priority: 0.9 },
     { url: `${site.url}/photos`, lastModified: now, priority: 0.8 },
-    { url: `${site.url}/skincare`, lastModified: now, priority: 0.8 },
-    { url: `${site.url}/supplements`, lastModified: now, priority: 0.8 },
-    { url: `${site.url}/oral-care`, lastModified: now, priority: 0.8 },
-    { url: `${site.url}/hair-care`, lastModified: now, priority: 0.8 },
-    { url: `${site.url}/body-care`, lastModified: now, priority: 0.8 },
-    { url: `${site.url}/essentials`, lastModified: now, priority: 0.8 },
-    { url: `${site.url}/miscellaneous`, lastModified: now, priority: 0.8 },
+    ...KINDS.map((kind) => ({
+      url: `${site.url}${kindPath(kind)}`,
+      lastModified: now,
+      priority: 0.8,
+    })),
     { url: `${site.url}/primers`, lastModified: now, priority: 0.8 },
     { url: `${site.url}/routine`, lastModified: now, priority: 0.8 },
     { url: `${site.url}/retired`, lastModified: now, priority: 0.5 },
     { url: `${site.url}/search`, lastModified: now, priority: 0.5 },
-    // /compare is disallowed in robots.ts — don't surface it here.
+    // /compare is disallowed in robots.ts, don't surface it here.
     { url: `${site.url}/links`, lastModified: now, priority: 0.7 },
     { url: `${site.url}/subscribe`, lastModified: now, priority: 0.6 },
     { url: `${site.url}/library`, lastModified: now, priority: 0.7 },
@@ -49,13 +48,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     if (v === "bad") return 0.5;
     return 0.55; // still testing
   };
-  const reviewRoutes: MetadataRoute.Sitemap = (["skincare", "supplements", "oral-care", "hair-care", "body-care", "essentials", "miscellaneous"] as const).flatMap(
-    (kind) =>
-      getReviews(kind).map((r) => ({
-        url: `${site.url}/${kind}/${r.slug}`,
-        lastModified: new Date(r.datePublished),
-        priority: priorityForVerdict(r.verdict),
-      })),
+  const reviewRoutes: MetadataRoute.Sitemap = KINDS.flatMap((kind) =>
+    getReviews(kind).map((r) => ({
+      url: `${site.url}${kindPath(kind)}/${r.slug}`,
+      lastModified: new Date(r.datePublished),
+      priority: priorityForVerdict(r.verdict),
+    })),
   );
   const primerRoutes: MetadataRoute.Sitemap = getPrimers().map((p) => ({
     url: `${site.url}/primers/${p.slug}`,

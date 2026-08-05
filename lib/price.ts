@@ -67,6 +67,36 @@ export const REGION_TAG: Record<Region, string> = {
   uk: "UK",
 };
 
+/**
+ * Split a stored price string into its currency prefix and its amount,
+ * e.g. "₹2,400" to { symbol: "₹", amount: 2400 }. Prices are stored as
+ * display strings with the native symbol baked in, so any derived
+ * figure (cost per wear, cost per day) has to re-emit the same symbol
+ * rather than look one up, which would be a second source of truth for
+ * currency. Returns null for anything without a parseable number.
+ */
+export function splitPrice(
+  value: string | undefined,
+): { symbol: string; amount: number } | null {
+  if (!value) return null;
+  const m = value.trim().match(/^([^\d]*)([\d.,]+)/);
+  if (!m) return null;
+  const amount = Number(m[2].replace(/,/g, ""));
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+  return { symbol: m[1].trim(), amount };
+}
+
+/**
+ * Re-emit an amount with the same currency prefix it was parsed from.
+ * Sub-10 values keep one decimal so a cheap-per-wear figure doesn't
+ * round to a misleading whole number.
+ */
+export function formatDerivedPrice(symbol: string, amount: number): string {
+  const rounded =
+    amount >= 10 ? Math.round(amount).toLocaleString("en-IN") : amount.toFixed(1);
+  return `${symbol}${rounded}`;
+}
+
 export function hasAnyPrice(p: PriceField): boolean {
   if (!p) return false;
   if (typeof p === "string") return p.trim().length > 0;

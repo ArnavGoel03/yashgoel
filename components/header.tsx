@@ -9,7 +9,7 @@ import { NavLink } from "./nav-link";
 import { ThemeToggle } from "./theme-toggle";
 import { site } from "@/lib/site";
 
-type NavGroup = "tools" | "personal" | "meta";
+type NavGroup = "sections" | "tools" | "personal" | "meta";
 
 type NavItem = {
   href: string;
@@ -24,14 +24,20 @@ type NavItem = {
    *                 (below lg) shows everything regardless.
    *
    * Secondary items also carry a `group` so the More dropdown reads
-   * as three labeled clusters (Tools / Personal / Meta) instead of a
-   * flat list of 14 things.
+   * as labeled clusters (Sections / Tools / Personal / Meta) instead
+   * of a flat list of 14 things.
+   *
+   * Six categories is what fits inline at lg without the masthead
+   * wrapping, so the remaining review sections live in the dropdown
+   * under "Sections". Flip a `weight` to "primary" to promote one,
+   * but check the masthead at 1024px afterwards.
    */
   weight: "primary" | "secondary";
   group?: NavGroup;
 };
 
 const GROUP_LABEL: Record<NavGroup, string> = {
+  sections: "Sections",
   tools: "Tools",
   personal: "Personal",
   meta: "Meta",
@@ -46,13 +52,17 @@ const nav: NavItem[] = [
   { href: "/essentials", label: "Essentials", tourId: "tab-essentials", weight: "primary" },
   { href: "/routine", label: "Routine", weight: "primary" },
 
+  // Review sections that don't fit the inline row. Same rank as the
+  // primary categories, just parked in the dropdown for space.
+  { href: "/fashion", label: "Fashion", tourId: "tab-fashion", weight: "secondary", group: "sections" },
+  { href: "/miscellaneous", label: "Miscellaneous", weight: "secondary", group: "sections" },
+
   // Tools, interactive, builders, references. The three builders
   // (routine, stack, simulator) share /build as a tabbed workshop.
   { href: "/today", label: "Today", weight: "secondary", group: "tools" },
   { href: "/build", label: "Build", weight: "secondary", group: "tools" },
   { href: "/glossary", label: "Glossary", weight: "secondary", group: "tools" },
   { href: "/primers", label: "Primers", weight: "secondary", group: "tools" },
-  { href: "/miscellaneous", label: "Miscellaneous", weight: "secondary", group: "tools" },
 
   // Personal, voice and life surfaces.
   { href: "/library", label: "Library", weight: "secondary", group: "personal" },
@@ -113,7 +123,7 @@ export function Header() {
   );
 
   // Group secondary items, preserving order within each group.
-  const groupOrder: NavGroup[] = ["tools", "personal", "meta"];
+  const groupOrder: NavGroup[] = ["sections", "tools", "personal", "meta"];
   const grouped = groupOrder
     .map((g) => ({
       group: g,
@@ -217,8 +227,8 @@ export function Header() {
               {moreOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-full z-50 mt-2 grid origin-top-right grid-cols-1 gap-x-6 gap-y-2 rounded-xl border border-stone-200 bg-white p-3 shadow-lg sm:grid-cols-3 dark:border-stone-800 dark:bg-stone-950"
-                  style={{ minWidth: 480 }}
+                  className="absolute right-0 top-full z-50 mt-2 grid origin-top-right grid-cols-1 gap-x-6 gap-y-2 rounded-xl border border-stone-200 bg-white p-3 shadow-lg sm:grid-cols-4 dark:border-stone-800 dark:bg-stone-950"
+                  style={{ minWidth: 620 }}
                 >
                   {grouped.map(({ group, items }) => (
                     <section key={group} className="min-w-[140px]">
