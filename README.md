@@ -110,7 +110,7 @@ garment:
   fabric:                  # every fibre off the label, must total 100
     - { material: "Cotton", percent: 98 }
     - { material: "Elastane", percent: 2 }
-  care:                    # ISO 3758 / GINETEX codes, drawn as symbols
+  care:                    # care-label codes, drawn as symbols
     - machine-wash-cold
     - do-not-bleach
     - line-dry
@@ -127,6 +127,19 @@ once in `lib/garment-types.ts` and is imported by the Zod schema, the admin
 form, the renderers and the tests, so none of them can drift apart. It is a
 module of its own, not a section of `lib/types.ts`, so the section stays
 liftable (see "Spinning `/fashion` out" below).
+
+The care vocabulary is 42 codes covering both standards that write the
+world's care labels: ISO 3758 / GINETEX for India, the UK and the EU, and
+ASTM D5489 for the US. There is one code per **instruction**, not per
+drawing, so a garment records what to do and the renderer decides how to
+draw it. `GARMENT_CARE_REGIONS` records which markets print each symbol and
+`careRegionDetail()` turns that into the line under it, so a reader in Ulsoor
+knows a shade-drying symbol will not appear on an American label. Where the
+two standards draw one instruction differently, `CareSymbol` takes a
+`standard` prop and the legend on `/fashion` shows both, GINETEX first: the
+six wash temperatures (a number against one to six dots) and drip dry.
+`GARMENT_CARE_FAMILIES` groups the codes the way a label is organised, and a
+test asserts the families cover every code exactly once.
 
 Months owned, estimated wears and cost per wear are **derived** at build time
 in `lib/garment.ts`, never stored, so they cannot go stale. Cost per wear only
