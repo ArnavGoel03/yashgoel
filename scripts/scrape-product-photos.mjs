@@ -22,6 +22,10 @@ import { fileURLToPath } from "node:url";
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
 const PUBLIC_PRODUCTS_DIR = join(REPO_ROOT, "public", "products");
+// Mirror of KINDS in lib/types.ts. This file is plain .mjs run by node
+// with no TS pipeline, so it cannot import the const; keep the two in
+// step when a kind is added (tests/data-integrity.test.ts will not
+// catch a drift here, it only guards the app routes).
 const KINDS = [
   "skincare",
   "supplements",
@@ -30,6 +34,7 @@ const KINDS = [
   "body-care",
   "essentials",
   "miscellaneous",
+  "fashion",
 ];
 
 const UA =

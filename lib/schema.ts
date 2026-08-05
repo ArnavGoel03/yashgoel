@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+import { KINDS } from "@/lib/types";
+import {
+  GARMENT_CARE_CODES,
+  GARMENT_CONDITIONS,
+  GARMENT_FITS,
+  GARMENT_SEASONS,
+} from "@/lib/garment-types";
+
 /**
  * Reject Amazon search-result URLs as buy links. A URL like
  * `amazon.in/s?k=colgate+floss` does resolve, but it lands the
@@ -80,19 +88,7 @@ export const reviewFrontmatter = z.object({
   // URL stays at the canonical kind (no duplicate routes); listing
   // queries union match. Used for items that genuinely live in two
   // sections (a beard trimmer = hair-care AND body-care).
-  crossList: z
-    .array(
-      z.enum([
-        "skincare",
-        "supplements",
-        "oral-care",
-        "hair-care",
-        "body-care",
-        "essentials",
-        "miscellaneous",
-      ]),
-    )
-    .default([]),
+  crossList: z.array(z.enum(KINDS)).default([]),
   photo: z.string().optional(),
   // Cold-mirror URL for the primary photo. When `photo` is a local
   // /products/... path served from /public/, this points at a copy on
@@ -147,6 +143,46 @@ export const reviewFrontmatter = z.object({
    * lib/uv-filters.ts. Leave undefined for non-sunscreen products.
    */
   uvFilters: z.array(z.string()).optional(),
+  /**
+   * Fashion-only: the properties a garment has that a bottle doesn't.
+   * Every field is data, never prose, so the detail page can draw the
+   * fit, the blend, the care symbols and the wear timeline instead of
+   * describing them. Leave undefined for non-fashion kinds. Enums come
+   * from lib/garment-types.ts so the admin form, the renderer and the
+   * content files can never disagree about the vocabulary.
+   */
+  garment: z
+    .object({
+      fit: z.enum(GARMENT_FITS),
+      size: z.string().min(1),
+      sizeNote: z.string().optional(),
+      fabric: z
+        .array(
+          z.object({
+            material: z.string().min(1),
+            percent: z.number().positive().max(100),
+          }),
+        )
+        .default([]),
+      care: z.array(z.enum(GARMENT_CARE_CODES)).default([]),
+      season: z.array(z.enum(GARMENT_SEASONS)).default([]),
+      // YYYY-MM or YYYY-MM-DD, same convention as `changelog`. Format
+      // is asserted by tests/data-integrity.test.ts alongside every
+      // other date on the site, so there is one date rule, not two.
+      firstWorn: z.string().min(1),
+      wearsPerMonth: z.number().positive().max(31).optional(),
+      condition: z.enum(GARMENT_CONDITIONS),
+      aging: z
+        .array(z.object({ date: z.string(), note: z.string().min(1) }))
+        .default([]),
+    })
+    .refine(
+      (g) =>
+        g.fabric.length === 0 ||
+        Math.abs(g.fabric.reduce((sum, f) => sum + f.percent, 0) - 100) < 0.01,
+      { message: "Fabric percentages must add up to 100." },
+    )
+    .optional(),
   pros: z.array(z.string()).default([]),
   cons: z.array(z.string()).default([]),
   repurchase: z.boolean().optional(),

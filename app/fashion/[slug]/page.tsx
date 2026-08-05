@@ -9,6 +9,8 @@ import { RatingAxes } from "@/components/rating-axes";
 import { ReviewChangelog } from "@/components/review-changelog";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { DraftBanner } from "@/components/draft-banner";
+import { GarmentLongevity } from "@/components/garment-longevity";
+import { GarmentPanel } from "@/components/garment-panel";
 import { ProsCons } from "@/components/pros-cons";
 import { ReaderNote } from "@/components/reader-note";
 import { RelatedReviews } from "@/components/related-reviews";
@@ -16,7 +18,6 @@ import { getRelatedReviews } from "@/lib/related";
 import { PhotoTimeline } from "@/components/photo-timeline";
 import { MdxContent } from "@/components/mdx-content";
 import { ContinueReading } from "@/components/continue-reading";
-import { IngredientChips } from "@/components/ingredient-chips";
 import { ReviewJsonLd } from "@/components/json-ld";
 import {
   getAdjacentReviews,
@@ -40,18 +41,18 @@ type Props = { params: Promise<{ slug: string }> };
 // canonical URL lives under another kind. With Cache Components an
 // empty result also fails the build outright.
 export async function generateStaticParams() {
-  return getAllReviewsIncludingHidden("supplements").map((r) => ({ slug: r.slug }));
+  return getAllReviewsIncludingHidden("fashion").map((r) => ({ slug: r.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const review = getReview("supplements", slug);
+  const review = getReview("fashion", slug);
   if (!review) return {};
   const description = review.summary || `${review.brand} ${review.name} review.`;
   return {
     title: `${review.name} by ${review.brand}`,
     description,
-    alternates: { canonical: `/supplements/${review.slug}` },
+    alternates: { canonical: `/fashion/${review.slug}` },
     // Drafts stay reachable by URL but must never be indexed or
     // surfaced as a finished review.
     robots: review.hidden ? { index: false, follow: false } : undefined,
@@ -64,36 +65,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function SupplementReviewPage({ params }: Props) {
+export default async function FashionReviewPage({ params }: Props) {
   const { slug } = await params;
-  const review = getReview("supplements", slug);
+  const review = getReview("fashion", slug);
   if (!review) notFound();
   const relatedPrimers = getPrimersForProduct(review.slug);
-  const { prev, next } = getAdjacentReviews("supplements", review.slug);
+  const { prev, next } = getAdjacentReviews("fashion", review.slug);
   const related = getRelatedReviews(review);
 
   return (
     <article>
       <ReadingProgress />
-      <ContinueReading path={`/supplements/`} />
+      <ContinueReading path={`/fashion/`} />
       <ReviewJsonLd review={review} />
       <Container className="py-10">
         <Breadcrumb
           trail={[
             { name: "Home", href: "/" },
-            { name: "Supplements", href: "/supplements" },
-            { name: review.name, href: `/supplements/${review.slug}` },
+            { name: "Fashion", href: "/fashion" },
+            { name: review.name, href: `/fashion/${review.slug}` },
           ]}
         />
         <div className="flex items-center justify-between gap-4">
           <Link
-            href="/supplements"
+            href="/fashion"
             className="inline-flex items-center gap-1.5 text-sm text-stone-500 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
           >
             <ArrowLeft className="h-4 w-4" />
-            All supplements
+            All fashion
           </Link>
-          <CopyLink path={`/supplements/${review.slug}`} />
+          <CopyLink path={`/fashion/${review.slug}`} />
         </div>
 
         {review.hidden && <DraftBanner />}
@@ -126,9 +127,13 @@ export default async function SupplementReviewPage({ params }: Props) {
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_320px]">
           <div className="space-y-10">
             <MdxContent source={review.body} withDropCap />
+            {review.garment && <GarmentPanel garment={review.garment} />}
+            {review.garment && (
+              <GarmentLongevity garment={review.garment} price={review.price} />
+            )}
             <PhotoTimeline review={review} />
             <ProsCons pros={review.pros} cons={review.cons} />
-            <ReaderNote kind="supplements" slug={review.slug} />
+            <ReaderNote kind="fashion" slug={review.slug} />
           </div>
           <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
             <TocNav body={review.body} />
@@ -136,10 +141,6 @@ export default async function SupplementReviewPage({ params }: Props) {
             <RatingAxes review={review} />
             <RelatedPrimers primers={relatedPrimers} />
             <ReviewChangelog review={review} />
-            <IngredientChips
-              ingredients={review.ingredients ?? []}
-              label="Active ingredients"
-            />
           </aside>
         </div>
 
@@ -150,7 +151,7 @@ export default async function SupplementReviewPage({ params }: Props) {
               ? {
                   title: prev.name,
                   subtitle: `${prev.brand} · ${prev.category}`,
-                  href: `/supplements/${prev.slug}`,
+                  href: `/fashion/${prev.slug}`,
                 }
               : null
           }
@@ -159,11 +160,11 @@ export default async function SupplementReviewPage({ params }: Props) {
               ? {
                   title: next.name,
                   subtitle: `${next.brand} · ${next.category}`,
-                  href: `/supplements/${next.slug}`,
+                  href: `/fashion/${next.slug}`,
                 }
               : null
           }
-          label="Supplement pagination"
+          label="Fashion pagination"
         />
       </Container>
     </article>

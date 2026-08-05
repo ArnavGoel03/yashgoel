@@ -12,7 +12,30 @@ import { socials } from "@/lib/socials";
 import { getAllReviews, getReviews } from "@/lib/content";
 import { getReviewsInRoutine } from "@/lib/routines";
 import { photos } from "@/lib/photos";
-import type { ReviewSummary } from "@/lib/types";
+import { KIND_LABEL, KINDS, kindPath } from "@/lib/types";
+import type { Kind, ReviewSummary } from "@/lib/types";
+
+// One line per section, in KINDS order. The tile grid below is built
+// from this map, so a new kind can never be silently missing from the
+// homepage (TypeScript fails the build until its blurb exists).
+const SECTION_BLURB: Record<Kind, string> = {
+  skincare:
+    "Cleansers, serums, moisturizers, sunscreens, every product that's lived on my face for a month.",
+  supplements:
+    "Vitamins, minerals, nootropics. What I took, how long, and what I actually felt.",
+  "oral-care":
+    "Electric brushes, pastes, mouthwash, for teeth, breath, and gums.",
+  "hair-care":
+    "Conditioners, masks, treatments, what lives in the shower for hair, scalp, and ends.",
+  "body-care":
+    "Body washes, lotions, scrubs, trimmers, the everyday cleanse-and-moisturise from the neck down.",
+  essentials:
+    "Cornerstone daily-life devices: laptop, earbuds, wearable, charger, water filter, fan. The pieces I'd replace within a week if they broke.",
+  miscellaneous:
+    "Random utility objects, gadgets, accessories. The smaller things that earn or fail their shelf space.",
+  fashion:
+    "Shirts, denim, knitwear. What a piece is made of, how it fits, how it is washed, and how it has aged since the first wear.",
+};
 
 // Small ordered map for the starter skincare snippet so the AM column
 // reads cleanse → moisturize → protect, not file-name order.
@@ -37,15 +60,10 @@ const STARTER_ORAL_ORDER: Record<string, number> = {
 
 export default function HomePage() {
   const allReviews = getAllReviews();
-  const skincareCount = getReviews("skincare").length;
-  const supplementsCount = getReviews("supplements").length;
-  const oralCareCount = getReviews("oral-care").length;
-  const hairCareCount = getReviews("hair-care").length;
-  const bodyCareCount = getReviews("body-care").length;
-  const essentialsCount = getReviews("essentials").length;
-  const miscellaneousCount = getReviews("miscellaneous").length;
-  const totalReviews =
-    skincareCount + supplementsCount + oralCareCount + hairCareCount + bodyCareCount + essentialsCount + miscellaneousCount;
+  const countByKind = Object.fromEntries(
+    KINDS.map((kind) => [kind, getReviews(kind).length]),
+  ) as Record<Kind, number>;
+  const totalReviews = KINDS.reduce((sum, kind) => sum + countByKind[kind], 0);
   const photosCount = photos.length;
   // Hero strip stats: every value comes from the actual content set so
   // the line stays honest as the catalog grows. No more hardcoded
@@ -110,17 +128,17 @@ export default function HomePage() {
 
       {/* Hero, magazine cover. `bg-paper-grain` overlays a 1 KB SVG
           noise so the rose wash reads as printed paper, not a flat
-          gradient — the analog texture is what separates editorial
+          gradient, the analog texture is what separates editorial
           from generic. */}
       <section className="bg-paper-grain relative overflow-hidden border-b border-stone-300 bg-gradient-to-b from-stone-50 via-stone-50 to-white dark:border-stone-800 dark:from-stone-950 dark:via-stone-950 dark:to-stone-900">
         <Container className="relative z-10 pt-12 pb-20 sm:pt-16 sm:pb-28">
           {/* Masthead rule: greeting · location · issue · date */}
           <div className="mb-10 flex items-baseline justify-between gap-4 text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">
             <span className="flex items-baseline gap-2">
-              {/* Hero rose drifts on a 60s loop — ambient, not a
+              {/* Hero rose drifts on a 60s loop, ambient, not a
                   spinner. Reduced-motion sees a still mark. */}
               <span className="rose-drift text-rose-400">❋</span>
-              {/* Quiet time-of-day greeting — hydrates on the client
+              {/* Quiet time-of-day greeting, hydrates on the client
                   so it always reflects the visitor's local clock. */}
               <TimeGreeting />
               <span>{site.location}</span>
@@ -205,7 +223,7 @@ export default function HomePage() {
           </div>
         </Container>
         {/* Editorial rose wash. Sits behind the content (z-0) so the
-            soft tint never crawls over the headline or stats — that
+            soft tint never crawls over the headline or stats, that
             was the contrast hit reported on light mode. Top-right blob
             runs in both modes; the bottom-left companion is light-only
             because the user did not want dark mode touched.
@@ -220,7 +238,7 @@ export default function HomePage() {
         />
       </section>
 
-      {/* Starter routine — replaces the older "just added shelf" band.
+      {/* Starter routine, replaces the older "just added shelf" band.
           The point of the homepage for a first-time visitor is to teach
           them what a basic, defensible routine looks like, not to push
           the latest unverdicted product. Three columns mirror the three
@@ -250,7 +268,7 @@ export default function HomePage() {
         </Container>
       )}
 
-      {/* Photographs — promoted block ahead of the section grid. The
+      {/* Photographs, promoted block ahead of the section grid. The
           /photos surface gets its own moment rather than being tucked
           into the catalog tiles. Renders the page-hero frame as a
           cinematic cover with a typographic right-rail. */}
@@ -350,14 +368,21 @@ export default function HomePage() {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
-            { index: 1, href: "/skincare", eyebrow: `${skincareCount} reviews`, title: "Skincare", description: "Cleansers, serums, moisturizers, sunscreens, every product that's lived on my face for a month." },
-            { index: 2, href: "/supplements", eyebrow: `${supplementsCount} reviews`, title: "Supplements", description: "Vitamins, minerals, nootropics. What I took, how long, and what I actually felt." },
-            { index: 3, href: "/oral-care", eyebrow: `${oralCareCount} reviews`, title: "Oral care", description: "Electric brushes, pastes, mouthwash, for teeth, breath, and gums." },
-            { index: 4, href: "/hair-care", eyebrow: `${hairCareCount} reviews`, title: "Hair care", description: "Conditioners, masks, treatments, what lives in the shower for hair, scalp, and ends." },
-            { index: 5, href: "/body-care", eyebrow: `${bodyCareCount} reviews`, title: "Body care", description: "Body washes, lotions, scrubs, trimmers, the everyday cleanse-and-moisturise from the neck down." },
-            { index: 6, href: "/essentials", eyebrow: `${essentialsCount} reviews`, title: "Essentials", description: "Cornerstone daily-life devices: laptop, earbuds, wearable, charger, water filter, fan. The pieces I'd replace within a week if they broke." },
-            { index: 7, href: "/miscellaneous", eyebrow: `${miscellaneousCount} reviews`, title: "Miscellaneous", description: "Random utility objects, gadgets, accessories. The smaller things that earn or fail their shelf space." },
-            { index: 8, href: "/now", eyebrow: "this month", title: "Now", description: "What I'm currently working on, listening to, thinking about, and consciously not doing." },
+            ...KINDS.map((kind, i) => ({
+              index: i + 1,
+              href: kindPath(kind),
+              eyebrow: `${countByKind[kind]} ${countByKind[kind] === 1 ? "review" : "reviews"}`,
+              title: KIND_LABEL[kind],
+              description: SECTION_BLURB[kind],
+            })),
+            {
+              index: KINDS.length + 1,
+              href: "/now",
+              eyebrow: "this month",
+              title: "Now",
+              description:
+                "What I'm currently working on, listening to, thinking about, and consciously not doing.",
+            },
           ].map((tile, i) => (
             <div
               key={tile.href}

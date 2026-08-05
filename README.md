@@ -18,6 +18,7 @@ The site is editorial content (MDX files committed to git) plus a small dashboar
 | `/skincare` | Product reviews, one MDX file per product, country availability filter |
 | `/supplements` | Same as skincare |
 | `/oral-care` | Same as skincare |
+| `/fashion` | Clothes, same review shape plus a structured `garment` record (fit, blend, care, wear) |
 | `/links` | All my socials in one place |
 | `/admin` | Private dashboard for adding/editing content (not auth-protected yet, see "Auth" below) |
 
@@ -93,6 +94,52 @@ Markdown body…
 
 Frontmatter is validated by Zod at request time, bad data fails the page render with a clear error.
 
+### Fashion entries (`content/fashion/`)
+
+A garment is the same review shape as everything else, plus one extra
+frontmatter object. Clothes have properties a bottle does not: a shape, a
+material, a maintenance contract and a life. Those are stored as data so the
+detail page can draw them (fit silhouette, blend bar, care symbols, wear
+track) instead of describing them in prose.
+
+```mdx
+garment:
+  fit: tailored            # slim | tailored | regular | relaxed | oversized
+  size: "M"                # as labelled; sizes are not universal
+  sizeNote: "Runs a half size small in the shoulder."   # optional
+  fabric:                  # every fibre off the label, must total 100
+    - { material: "Cotton", percent: 98 }
+    - { material: "Elastane", percent: 2 }
+  care:                    # ISO 3758 / GINETEX codes, drawn as symbols
+    - machine-wash-cold
+    - do-not-bleach
+    - line-dry
+  season: [summer, monsoon]        # summer | monsoon | winter | year-round
+  firstWorn: "2026-03"             # YYYY-MM or YYYY-MM-DD
+  wearsPerMonth: 8                 # honest estimate; gates cost per wear
+  condition: broken-in             # as-new | broken-in | worn-in | fading | failing
+  aging:
+    - { date: "2026-05", note: "First honeycombs behind the knee." }
+```
+
+The vocabulary (fits, seasons, care codes, conditions and their labels) lives
+once in `lib/garment-types.ts` and is imported by the Zod schema, the admin
+form, the renderers and the tests, so none of them can drift apart. It is a
+module of its own, not a section of `lib/types.ts`, so the section stays
+liftable (see "Spinning `/fashion` out" below).
+
+Months owned, estimated wears and cost per wear are **derived** at build time
+in `lib/garment.ts`, never stored, so they cannot go stale. Cost per wear only
+renders when both a price and `wearsPerMonth` exist.
+
+### Drafts
+
+Any review with `hidden: true` is excluded from every listing, the feed and
+the sitemap, stays reachable at its own URL, is marked `noindex`, and renders
+a "Draft, not published" banner at the top of the page. Use it for anything
+whose details are not yet confirmed from the product in hand. The three
+`content/fashion/draft-*.mdx` files are structural templates, not reviews.
+
 ### Notes (essays)
 
 Drop an `.mdx` file in `content/notes/` with frontmatter `{ title, description, datePublished, tags }`. No body schema; write what you want.
@@ -100,6 +147,86 @@ Drop an `.mdx` file in `content/notes/` with frontmatter `{ title, description, 
 ### Photos
 
 Use the dashboard's **Add photo** tab. Drop the file in, fill caption / alt / location / date, original is uploaded to Vercel Blob (no recompression) and an entry is appended to `content/photos.json`.
+
+---
+
+## Spinning `/fashion` out into its own site
+
+Not planned, not scheduled, and deliberately not done. Fashion lives here
+because it is the same first-person register and the same reader. But clothes
+are the one category that could plausibly outgrow a personal review site, so
+the section is built as a vertical slice that can be lifted out whole. This is
+the plan for that day, written now while the seams are still fresh.
+
+### Why it is liftable (already true, no future work required)
+
+1. **Every fashion-specific file is named `fashion` or `garment`.** There is no
+   garment logic hiding in a shared component. `grep -ril garment` returns the
+   manifest below plus exactly three shared files.
+2. **The dependency runs one way.** The fashion slice imports the shared site
+   (layout, cards, price, retailers, content loader). The shared site imports
+   from the slice only the `Garment` type on `Review.garment` and the four
+   `GARMENT_*` enums used by the zod object in `lib/schema.ts`.
+3. **Everything else derives from `KINDS`.** Nav, homepage tiles, sitemap,
+   `llms.txt`, search, the feed, the admin section list and the drift test all
+   read that tuple, so removing the section from this site is one edit, not a
+   sweep.
+4. **Content is portable.** MDX plus frontmatter on disk, no database, images
+   referenced by URL. `content/fashion/` moves by `git mv`.
+
+### The manifest (what moves)
+
+```
+app/fashion/page.tsx                    listing
+app/fashion/[slug]/page.tsx             detail
+app/fashion/[slug]/opengraph-image.tsx  OG card
+components/garment-icons.tsx            fit silhouettes + ISO 3758 care glyphs
+components/garment-panel.tsx            shape, blend, wearable window, care
+components/garment-longevity.tsx        months owned, wears, cost per wear
+components/garment-method.tsx           the symbol legend / how it is judged
+lib/garment-types.ts                    the entire vocabulary
+lib/garment.ts                          derived figures (nothing stored)
+tests/garment.test.ts                   unit tests for the derivations
+content/fashion/*.mdx                   the entries
+```
+
+### The couplings (the only things the new site must supply)
+
+| Imported from | Used for | Replace with |
+|---|---|---|
+| `lib/site.ts` | name, canonical URL, OG identity | new site's own identity module |
+| `lib/content.ts` | MDX read + zod validate + sort | copy; drop the `kind` argument, one folder |
+| `lib/schema.ts` | frontmatter validation | copy; keep only the fields clothes use |
+| `lib/types.ts` | `Review`, `RegionalPrice` | copy those two; `Kind` becomes unnecessary |
+| `lib/price.ts`, `lib/retailers.ts`, `lib/affiliate.ts` | multi-region prices and buy links | copy as is, they are category-agnostic |
+| `components/container.tsx`, section masthead, `product-card.tsx` | page grammar | copy or redesign; this is where a standalone site should actually diverge |
+| `app/globals.css` | theme tokens, rose accent, fonts | copy; a separate brand would pick its own |
+
+### The removal path on this site (one edit plus two deletes)
+
+1. Delete `"fashion"` from `KINDS` in `lib/types.ts` and its entry in
+   `KIND_LABEL`. Nav, homepage, sitemap, `llms.txt`, feed, search and admin all
+   follow automatically.
+2. Delete `app/fashion/` and `content/fashion/`.
+3. Delete the `garment` object from `reviewFrontmatter` in `lib/schema.ts` and
+   the `garment?: Garment` field plus the `garment-types` import from
+   `lib/types.ts`.
+4. Delete the `garment*` form fields from `app/admin/product-form.tsx` and the
+   matching parse block in `app/admin/actions.ts`.
+5. Delete `lib/garment*.ts`, `components/garment-*.tsx`, `tests/garment.test.ts`.
+6. Add a permanent redirect from `/fashion/:slug*` to the new host so existing
+   links and search results survive the move.
+7. `pnpm test` is the check. The drift guard in `tests/data-integrity.test.ts`
+   fails if a kind is left half-removed.
+
+### What would justify doing it
+
+A separate site is worth the split only when at least one is true: fashion
+entries outnumber everything else combined, the audience for clothes stops
+overlapping the audience for sunscreen, or the section needs something this
+site refuses to carry (sizing databases, a shop, user submissions). Until then
+the split costs a second deploy, a second brand and a duplicated content
+pipeline while buying nothing.
 
 ---
 
@@ -206,12 +333,15 @@ content/
   skincare/*.mdx            # one file per review
   supplements/*.mdx
   oral-care/*.mdx
+  fashion/*.mdx             # reviews carrying a `garment` block
   notes/*.mdx
   photos.json               # photo gallery metadata
 
 lib/
   affiliate.ts              # URL → affiliate-tagged URL rewriter
   content.ts                # MDX file readers
+  garment-types.ts          # garment vocabulary (fits, seasons, care, conditions)
+  garment.ts                # derived garment longevity (months owned, cost per wear)
   github.ts                 # tiny GitHub REST client
   photos.ts                 # photo loader
   retailers.ts              # host → retailer name + theme + region maps

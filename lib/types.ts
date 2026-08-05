@@ -1,11 +1,53 @@
-export type Kind =
-  | "skincare"
-  | "supplements"
-  | "oral-care"
-  | "hair-care"
-  | "body-care"
-  | "essentials"
-  | "miscellaneous";
+import type { Garment } from "./garment-types";
+
+/**
+ * The canonical list of review kinds. This is the single source of
+ * truth: the `Kind` type, the zod enum in lib/schema.ts, the nav, the
+ * sitemap, llms.txt, the homepage tiles, the admin form and the tests
+ * all derive from this array. Order is display order (it drives the
+ * homepage tile sequence and the admin section list).
+ *
+ * A kind's key IS its content directory (`content/<kind>/`) and its
+ * route (`/<kind>`), so adding one here means adding
+ * `app/<kind>/page.tsx` + `app/<kind>/[slug]/page.tsx`. The drift
+ * guard in tests/data-integrity.test.ts fails if you forget.
+ */
+export const KINDS = [
+  "skincare",
+  "supplements",
+  "oral-care",
+  "hair-care",
+  "body-care",
+  "essentials",
+  "miscellaneous",
+  "fashion",
+] as const;
+
+export type Kind = (typeof KINDS)[number];
+
+/** Display label for each kind. Sentence case, matches the nav. */
+export const KIND_LABEL: Record<Kind, string> = {
+  skincare: "Skincare",
+  supplements: "Supplements",
+  "oral-care": "Oral care",
+  "hair-care": "Hair care",
+  "body-care": "Body care",
+  essentials: "Essentials",
+  miscellaneous: "Miscellaneous",
+  fashion: "Fashion",
+};
+
+/** Listing route for a kind. Detail pages are `${kindPath(k)}/${slug}`. */
+export function kindPath(kind: Kind): string {
+  return `/${kind}`;
+}
+
+/** Runtime narrowing for untrusted strings (route params, form input). */
+export function isKind(value: unknown): value is Kind {
+  return (
+    typeof value === "string" && (KINDS as readonly string[]).includes(value)
+  );
+}
 
 export interface BuyLink {
   retailer: string;
@@ -65,6 +107,8 @@ export interface Review {
   ukLinks: BuyLink[];
   ingredients?: string[];
   uvFilters?: string[];
+  /** Fashion-only. Undefined on every other kind. */
+  garment?: Garment;
   pros: string[];
   cons: string[];
   repurchase?: boolean;
@@ -148,7 +192,7 @@ export interface Photo {
   /**
    * Optional EXIF / capture metadata. Rendered inline below the
    * caption when any field is present, so a photo can quietly tell
-   * you what shot it. Empty fields are skipped — partial EXIF is
+   * you what shot it. Empty fields are skipped, partial EXIF is
    * fine, missing EXIF is fine.
    */
   camera?: string;

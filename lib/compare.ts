@@ -1,3 +1,4 @@
+import { isKind } from "@/lib/types";
 import type { Kind } from "@/lib/types";
 
 /** URL-encoded compare ID: "kind/slug" (e.g. "supplements/magtein-l-threonate"). */
@@ -11,17 +12,8 @@ export function parseCompareId(id: CompareId): { kind: Kind; slug: string } | nu
   const [kind, ...rest] = id.split("/");
   const slug = rest.join("/");
   if (!slug) return null;
-  if (
-    kind !== "skincare" &&
-    kind !== "supplements" &&
-    kind !== "oral-care" &&
-    kind !== "hair-care" &&
-    kind !== "body-care" &&
-    kind !== "essentials" &&
-    kind !== "miscellaneous"
-  )
-    return null;
-  return { kind: kind as Kind, slug };
+  if (!isKind(kind)) return null;
+  return { kind, slug };
 }
 
 export function parseIdsParam(raw: string | string[] | undefined): CompareId[] {

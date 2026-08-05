@@ -8,6 +8,19 @@ import { retailerForUrl } from "@/lib/retailers";
 import { normalizeAmazonUrl } from "@/lib/amazon-url";
 import { isOurR2Url, r2Put } from "@/lib/r2";
 import { restoreImage, softDeleteImage } from "@/lib/trash";
+import { KINDS } from "@/lib/types";
+import {
+  GARMENT_CARE_CODES,
+  GARMENT_CONDITIONS,
+  GARMENT_FITS,
+  GARMENT_SEASONS,
+} from "@/lib/garment-types";
+import type { Kind } from "@/lib/types";
+import type {
+  Garment,
+  GarmentCareCode,
+  GarmentSeason,
+} from "@/lib/garment-types";
 
 /**
  * Belt-and-braces auth guard: middleware already blocks unauthenticated
@@ -50,7 +63,7 @@ const ALLOWED_UPLOAD_TYPES = new Set([
 ]);
 
 const reviewSchema = z.object({
-  kind: z.enum(["skincare", "supplements", "oral-care", "hair-care", "body-care", "essentials", "miscellaneous"]),
+  kind: z.enum(KINDS),
   name: z.string().trim().min(1, "required"),
   brand: z.string().trim().min(1, "required"),
   category: z.string().trim().min(1, "required"),
@@ -152,10 +165,44 @@ const reviewSchema = z.object({
     },
     z.boolean().optional(),
   ),
+  // Fashion-only fields. Kept as raw form strings here and shaped into
+  // the `garment` object by buildContentFromForm, so the enums stay
+  // owned by lib/garment-types.ts rather than respelled in the form.
+  garmentFit: z.string().optional(),
+  garmentSize: z.string().trim().optional(),
+  garmentSizeNote: z.string().trim().optional(),
+  garmentFabric: z.string().optional(),
+  garmentCare: z.union([z.string(), z.array(z.string())]).optional(),
+  garmentSeason: z.union([z.string(), z.array(z.string())]).optional(),
+  garmentFirstWorn: z.string().trim().optional(),
+  garmentWearsPerMonth: z
+    .string()
+    .optional()
+    .transform((v) => {
+      if (v === undefined || v === "") return undefined;
+      const n = Number(v);
+      return Number.isFinite(n) && n > 0 ? n : undefined;
+    }),
+  garmentCondition: z.string().optional(),
+  garmentAging: z.string().optional(),
   datePublished: z.string().trim().min(1, "required"),
   summary: z.string().optional().transform((v) => (v ?? "").trim()),
   body: z.string().optional(),
 });
+
+/**
+ * `Object.fromEntries(formData)` keeps only the LAST value of a
+ * repeated key, which silently drops every box in a checkbox group
+ * except the one checked last. Collect the known multi-value fields
+ * with getAll() so groups round-trip intact.
+ */
+const MULTI_VALUE_FIELDS = ["routines", "garmentCare", "garmentSeason"] as const;
+
+function formToObject(formData: FormData): Record<string, unknown> {
+  const out: Record<string, unknown> = Object.fromEntries(formData);
+  for (const key of MULTI_VALUE_FIELDS) out[key] = formData.getAll(key);
+  return out;
+}
 
 const photoSchema = z.object({
   alt: z.string().trim().min(1, "required"),
@@ -216,6 +263,43 @@ function parseBuyLinks(
   return out;
 }
 
+/** "Cotton 98, Elastane 2" -> [{ material: "Cotton", percent: 98 }, ...] */
+function parseFabric(s: string | undefined): Garment["fabric"] {
+  const out: Garment["fabric"] = [];
+  for (const part of (s ?? "").split(",")) {
+    const m = part.trim().match(/^(.+?)\s+(\d+(?:\.\d+)?)\s*%?$/);
+    if (!m) continue;
+    const percent = Number(m[2]);
+    if (!Number.isFinite(percent) || percent <= 0) continue;
+    out.push({ material: m[1].trim(), percent });
+  }
+  return out;
+}
+
+/** One "YYYY-MM | note" per line, used by the aging log. */
+function parseDatedNotes(s: string | undefined): { date: string; note: string }[] {
+  const out: { date: string; note: string }[] = [];
+  for (const line of parseLines(s)) {
+    const [rawDate, ...rest] = line.split("|");
+    const date = rawDate.trim();
+    const note = rest.join("|").trim();
+    if (!date || !note) continue;
+    out.push({ date, note });
+  }
+  return out;
+}
+
+/** Keep only values that are members of a canonical const tuple. */
+function pickEnums<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+): T[] {
+  const arr = value === undefined ? [] : Array.isArray(value) ? value : [value];
+  return arr.filter(
+    (v): v is T => typeof v === "string" && (allowed as readonly string[]).includes(v),
+  );
+}
+
 function yamlString(s: string): string {
   if (/^[-?*&!|>'"%@`#[{,]/.test(s) || /[:\n#]/.test(s)) {
     return JSON.stringify(s);
@@ -244,6 +328,7 @@ function buildReviewMdx(d: {
   westernLinks: { retailer: string; url: string }[];
   ukLinks: { retailer: string; url: string }[];
   ingredients: string[];
+  garment?: Garment;
   pros: string[];
   cons: string[];
   repurchase?: boolean;
@@ -313,6 +398,35 @@ function buildReviewMdx(d: {
   }
   if (d.ingredients.length)
     lines.push(`ingredients: [${d.ingredients.join(", ")}]`);
+  if (d.garment) {
+    const g = d.garment;
+    lines.push("garment:");
+    lines.push(`  fit: ${g.fit}`);
+    lines.push(`  size: ${JSON.stringify(g.size)}`);
+    if (g.sizeNote) lines.push(`  sizeNote: ${JSON.stringify(g.sizeNote)}`);
+    if (g.fabric.length) {
+      lines.push("  fabric:");
+      for (const f of g.fabric) {
+        lines.push(
+          `    - { material: ${JSON.stringify(f.material)}, percent: ${f.percent} }`,
+        );
+      }
+    }
+    if (g.care.length) lines.push(`  care: [${g.care.join(", ")}]`);
+    if (g.season.length) lines.push(`  season: [${g.season.join(", ")}]`);
+    lines.push(`  firstWorn: ${JSON.stringify(g.firstWorn)}`);
+    if (typeof g.wearsPerMonth === "number")
+      lines.push(`  wearsPerMonth: ${g.wearsPerMonth}`);
+    lines.push(`  condition: ${g.condition}`);
+    if (g.aging.length) {
+      lines.push("  aging:");
+      for (const a of g.aging) {
+        lines.push(
+          `    - { date: ${JSON.stringify(a.date)}, note: ${JSON.stringify(a.note)} }`,
+        );
+      }
+    }
+  }
   if (d.pros.length) {
     lines.push("pros:");
     for (const p of d.pros) lines.push(`  - ${p}`);
@@ -337,9 +451,36 @@ export type ActionState = {
   error?: string;
   message?: string;
   slug?: string;
-  kind?: "skincare" | "supplements" | "oral-care" | "hair-care" | "body-care" | "essentials" | "miscellaneous";
+  kind?: Kind;
   path?: string;
 };
+
+/**
+ * Shape the flat fashion form fields into the `garment` object. Returns
+ * undefined unless the four required fields are all present, so a
+ * half-filled form commits no garment block rather than one the content
+ * schema would reject at parse time.
+ */
+function buildGarment(d: z.infer<typeof reviewSchema>): Garment | undefined {
+  if (d.kind !== "fashion") return undefined;
+  const fit = pickEnums(d.garmentFit, GARMENT_FITS)[0];
+  const condition = pickEnums(d.garmentCondition, GARMENT_CONDITIONS)[0];
+  const size = (d.garmentSize ?? "").trim();
+  const firstWorn = (d.garmentFirstWorn ?? "").trim();
+  if (!fit || !condition || !size || !firstWorn) return undefined;
+  return {
+    fit,
+    size,
+    sizeNote: d.garmentSizeNote || undefined,
+    fabric: parseFabric(d.garmentFabric),
+    care: pickEnums<GarmentCareCode>(d.garmentCare, GARMENT_CARE_CODES),
+    season: pickEnums<GarmentSeason>(d.garmentSeason, GARMENT_SEASONS),
+    firstWorn,
+    wearsPerMonth: d.garmentWearsPerMonth,
+    condition,
+    aging: parseDatedNotes(d.garmentAging),
+  };
+}
 
 function buildContentFromForm(d: z.infer<typeof reviewSchema>): string {
   const ratings =
@@ -380,6 +521,7 @@ function buildContentFromForm(d: z.infer<typeof reviewSchema>): string {
     westernLinks: parseBuyLinks(d.westernLinks),
     ukLinks: parseBuyLinks(d.ukLinks),
     ingredients: parseList(d.ingredients),
+    garment: buildGarment(d),
     pros: parseLines(d.pros),
     cons: parseLines(d.cons),
     repurchase: d.repurchase,
@@ -395,7 +537,7 @@ export async function createReview(
 ): Promise<ActionState> {
   const authError = await requireAdmin();
   if (authError) return { ok: false, error: authError };
-  const parsed = reviewSchema.safeParse(Object.fromEntries(formData));
+  const parsed = reviewSchema.safeParse(formToObject(formData));
   if (!parsed.success) {
     return {
       ok: false,
@@ -452,7 +594,7 @@ export async function updateReview(
     return { ok: false, error: "Invalid slug format." };
   }
 
-  const parsed = reviewSchema.safeParse(Object.fromEntries(formData));
+  const parsed = reviewSchema.safeParse(formToObject(formData));
   if (!parsed.success) {
     return {
       ok: false,

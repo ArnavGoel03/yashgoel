@@ -1,16 +1,12 @@
 import Link from "next/link";
 import { getAllReviewsIncludingHidden } from "@/lib/content";
+import { KIND_LABEL, KINDS } from "@/lib/types";
 import type { Kind, ReviewSummary } from "@/lib/types";
 
-const SECTIONS: { kind: Kind; label: string }[] = [
-  { kind: "skincare", label: "Skincare" },
-  { kind: "supplements", label: "Supplements" },
-  { kind: "oral-care", label: "Oral care" },
-  { kind: "hair-care", label: "Hair care" },
-  { kind: "body-care", label: "Body care" },
-  { kind: "essentials", label: "Essentials" },
-  { kind: "miscellaneous", label: "Miscellaneous" },
-];
+const SECTIONS: { kind: Kind; label: string }[] = KINDS.map((kind) => ({
+  kind,
+  label: KIND_LABEL[kind],
+}));
 
 function verdictDisplay(review: ReviewSummary): string {
   switch (review.verdict) {
