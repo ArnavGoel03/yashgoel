@@ -31,10 +31,13 @@ export function ProductCardPhoto({
     () => photos.filter((p) => !errored[p]),
     [photos, errored],
   );
-  const [active, setActive] = useState(0);
-  useEffect(() => {
-    if (active >= valid.length) setActive(0);
-  }, [valid.length, active]);
+  const [requested, setRequested] = useState(0);
+  // A photo that fails to load drops out of `valid`, which can leave the
+  // requested index past the end. Clamping here is a render-time
+  // derivation of state we already hold; the effect this replaces set
+  // state during commit and re-rendered the card a second time.
+  const active = requested < valid.length ? requested : 0;
+  const setActive = setRequested;
   const multi = valid.length > 1;
   const allBroken = photos.length > 0 && valid.length === 0;
   const hovering = useRef(false);

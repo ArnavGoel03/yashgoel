@@ -108,8 +108,8 @@ export default async function BodyCareReviewPage({ params }: Props) {
               · {review.category}
             </span>
           </p>
-          <div className="flex items-start justify-between gap-6">
-            <h1 className="font-serif text-4xl leading-tight text-stone-900 dark:text-stone-100 sm:text-5xl">
+          <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+            <h1 className="min-w-0 grow basis-48 font-serif text-4xl leading-tight text-stone-900 dark:text-stone-100 sm:text-5xl">
               {review.name}
             </h1>
             <VerdictPill verdict={review.verdict} size="lg" />

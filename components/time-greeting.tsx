@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useClientValue } from "@/lib/use-client-value";
 
 /** Returns a calm greeting based on the browser's current hour. */
 function getGreeting(hour: number): string {
@@ -15,7 +16,7 @@ const RETURNING_WINDOW_MS = 365 * 24 * 60 * 60 * 1000; // 1 year
 
 /**
  * Reads/writes a tiny "you were here" timestamp so we can warm up the
- * greeting for returning readers. Only the timestamp is stored — no
+ * greeting for returning readers. Only the timestamp is stored , no
  * pageviews, no fingerprint, no remote sync. If the visitor cleared
  * site data we fall back to the time-of-day greeting like a first-
  * timer, which is the right behavior.
@@ -65,7 +66,7 @@ function weatherFromCode(code: number): string | null {
 const CACHE_KEY = "yashgoel-weather-v1";
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
-// San Diego, CA — site.location is anchored to the author's city, so
+// San Diego, CA , site.location is anchored to the author's city, so
 // the weather here mirrors his sky, not the visitor's.
 const LAT = 32.7157;
 const LON = -117.1611;
@@ -117,14 +118,30 @@ async function fetchWeather(): Promise<string | null> {
  * the greeting fades in once the browser clock lands, the weather
  * appends a moment later if the API responds.
  */
+// markVisit() below writes the marker that readReturning() reads, so the
+// answer has to be latched at the first read. Without the latch the
+// snapshot would flip once the visit was recorded and the greeting would
+// change under the reader mid-session.
+let returningLatch: boolean | null = null;
+
+function readReturningOnce(): boolean {
+  if (returningLatch === null) returningLatch = readReturning();
+  return returningLatch;
+}
+
 export function TimeGreeting() {
-  const [greeting, setGreeting] = useState<string | null>(null);
+  // Both of these are browser reads, the clock and localStorage. They are
+  // read on the first render instead of being written into state by an
+  // effect afterwards; only the weather, which is genuinely async, stays
+  // in state.
+  const greeting = useClientValue<string | null>(
+    () => getGreeting(new Date().getHours()),
+    null,
+  );
+  const returning = useClientValue(readReturningOnce, false);
   const [weather, setWeather] = useState<string | null>(null);
-  const [returning, setReturning] = useState(false);
 
   useEffect(() => {
-    setGreeting(getGreeting(new Date().getHours()));
-    setReturning(readReturning());
     markVisit();
     let cancelled = false;
     fetchWeather().then((phrase) => {

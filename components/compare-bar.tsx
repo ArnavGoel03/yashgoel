@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useClientValue } from "@/lib/use-client-value";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,23 +18,48 @@ type CompareCtx = {
 
 const Ctx = createContext<CompareCtx | null>(null);
 
-export function CompareProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<string[]>([]);
+const EMPTY: string[] = [];
 
-  // Hydrate from localStorage once on mount.
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          setItems(parsed.filter((x) => typeof x === "string").slice(0, MAX_ITEMS));
-        }
-      }
-    } catch {
-      // Ignore storage errors (private mode, quota, etc.).
-    }
-  }, []);
+// useSyncExternalStore calls the reader on every render and compares by
+// identity, so the parse is memoised against the raw string. Returning a
+// fresh array each time would re-render without end.
+let lastRaw: string | null = null;
+let lastParsed: string[] = EMPTY;
+
+function readCompare(): string[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw === lastRaw) return lastParsed;
+    lastRaw = raw;
+    lastParsed = raw
+      ? (JSON.parse(raw) as unknown[])
+          .filter((x): x is string => typeof x === "string")
+          .slice(0, MAX_ITEMS)
+      : EMPTY;
+    return lastParsed;
+  } catch {
+    // private mode, quota, malformed JSON
+    return EMPTY;
+  }
+}
+
+export function CompareProvider({ children }: { children: React.ReactNode }) {
+  // The stored list is read on the first render, not written into state
+  // by an effect afterwards. The old order also let the persist effect
+  // below fire with the empty initial value and blank localStorage for a
+  // tick before the hydrate effect put it back.
+  const stored = useClientValue<string[]>(readCompare, EMPTY);
+  const [override, setOverride] = useState<string[] | null>(null);
+  const items = override ?? stored;
+  const setItems = useCallback(
+    (next: string[] | ((prev: string[]) => string[])) =>
+      setOverride((prev) =>
+        typeof next === "function"
+          ? next(prev ?? readCompare())
+          : next,
+      ),
+    [],
+  );
 
   // Persist on every change. Empty array still writes "[]", which is fine.
   useEffect(() => {
@@ -50,11 +76,11 @@ export function CompareProvider({ children }: { children: React.ReactNode }) {
       if (prev.length >= MAX_ITEMS) return prev; // silently cap
       return [...prev, id];
     });
-  }, []);
+  }, [setItems]);
 
   const has = useCallback((id: string) => items.includes(id), [items]);
 
-  const clear = useCallback(() => setItems([]), []);
+  const clear = useCallback(() => setItems([]), [setItems]);
 
   return (
     <Ctx.Provider value={{ items, has, toggle, clear }}>

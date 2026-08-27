@@ -25,7 +25,7 @@ import type { SearchItem } from "@/lib/search-index";
 export function CommandPalette({ items }: { items: SearchItem[] }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [cursor, setCursor] = useState(0);
+  const [requestedCursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const router = useRouter();
@@ -65,13 +65,22 @@ export function CommandPalette({ items }: { items: SearchItem[] }) {
     };
   }, [open]);
 
-  useEffect(() => {
-    if (open) {
-      inputRef.current?.focus();
-    } else {
+  // Clearing the query belongs to the open/closed transition, not to a
+  // commit-time effect. React's documented way to reset state when a
+  // prop changes is to compare against the previous value during
+  // render; focusing the input stays in the effect because it is a real
+  // side effect on the DOM.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
+    if (!open) {
       setQuery("");
       setCursor(0);
     }
+  }
+
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
   }, [open]);
 
   const results = useMemo(() => {
@@ -95,10 +104,10 @@ export function CommandPalette({ items }: { items: SearchItem[] }) {
       .map((r) => r.item);
   }, [items, query]);
 
-  // Keep the cursor in range when results shrink.
-  useEffect(() => {
-    if (cursor >= results.length) setCursor(Math.max(0, results.length - 1));
-  }, [results.length, cursor]);
+  // Keep the cursor in range when results shrink. Derived at render
+  // rather than corrected afterwards, so a shrinking result list never
+  // paints a frame with the cursor off the end.
+  const cursor = Math.min(requestedCursor, Math.max(0, results.length - 1));
 
   const go = useCallback(
     (href: string) => {

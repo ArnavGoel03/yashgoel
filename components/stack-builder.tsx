@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useClientValue } from "@/lib/use-client-value";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { Plus, Search, X } from "lucide-react";
 import { safeInternalHref } from "@/lib/safe-url";
 
@@ -38,7 +38,6 @@ const WINDOWS: { id: Window; label: string; tip: string }[] = [
   { id: "bedtime", label: "Bedtime", tip: "L-theanine, glycine, ashwagandha if you take it twice a day." },
 ];
 
-const WINDOW_INDEX = new Map(WINDOWS.map((w, i) => [w.id, i]));
 
 const GOAL_OPTIONS = [
   { id: "muscle", label: "Strength + recovery" },
@@ -272,22 +271,49 @@ function decodeState(raw: string | null): { entries: StackEntry[]; goals: Goal[]
   }
 }
 
+// The share payload lives in the query string, which only exists in the
+// browser. useSyncExternalStore hands back the server snapshot during
+// hydration and the real one immediately after, so the hydrated HTML
+// still matches the prerender and the seeding below happens on the very
+// next render. `undefined` means "the client URL has not been read yet";
+// `null` means "read it, there is nothing to restore".
+let lastStackSearch: string | null = null;
+let lastStackState: ReturnType<typeof decodeState> = null;
+
+function stackStateFromUrl(): ReturnType<typeof decodeState> {
+  const search = window.location.search;
+  if (search !== lastStackSearch) {
+    lastStackSearch = search;
+    lastStackState = decodeState(new URLSearchParams(search).get("s"));
+  }
+  return lastStackState;
+}
+
+function useStackStateFromUrl() {
+  return useClientValue<ReturnType<typeof decodeState> | undefined>(
+    stackStateFromUrl,
+    undefined,
+  );
+}
+
 export function StackBuilder({ catalog }: { catalog: CatalogItem[] }) {
-  const sp = useSearchParams();
   const [entries, setEntries] = useState<StackEntry[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
-  const [hydrated, setHydrated] = useState(false);
   const [shareToast, setShareToast] = useState(false);
 
-  useEffect(() => {
-    const parsed = decodeState(sp.get("s"));
-    if (parsed) {
-      setEntries(parsed.entries);
-      setGoals(parsed.goals);
-    }
+  // Seeding during render rather than from an effect matters here: React
+  // finishes the re-render before committing, so the URL-writeback effect
+  // below never sees an empty stack with `hydrated` already true and
+  // never blanks the share link it was restoring from.
+  const fromUrl = useStackStateFromUrl();
+  const [hydrated, setHydrated] = useState(false);
+  if (!hydrated && fromUrl !== undefined) {
     setHydrated(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (fromUrl) {
+      setEntries(fromUrl.entries);
+      setGoals(fromUrl.goals);
+    }
+  }
 
   useEffect(() => {
     if (!hydrated) return;

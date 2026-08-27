@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useClientValue } from "@/lib/use-client-value";
 
-// Minimal SpeechRecognition typings — the DOM lib doesn't ship them; we
+// Minimal SpeechRecognition typings , the DOM lib doesn't ship them; we
 // only touch the surface we use.
 type SpeechResult = { transcript: string };
 type SpeechRecognitionEvent = {
@@ -46,7 +47,9 @@ export function useSpeechRecognition({
 }: {
   onTranscript: (transcript: string) => void;
 }) {
-  const [supported, setSupported] = useState(false);
+  // Whether the browser has SpeechRecognition at all is fixed for the
+  // life of the page, so it is read, not stored.
+  const supported = useClientValue(() => getSpeechRecognition() !== null, false);
   const [listening, setListening] = useState(false);
   const [error, setError] = useState<VoiceErrorKind | null>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
@@ -55,10 +58,7 @@ export function useSpeechRecognition({
     callbackRef.current = onTranscript;
   }, [onTranscript]);
 
-  useEffect(() => {
-    setSupported(getSpeechRecognition() !== null);
-    return () => recognitionRef.current?.abort();
-  }, []);
+  useEffect(() => () => recognitionRef.current?.abort(), []);
 
   const toggle = useCallback(() => {
     if (recognitionRef.current && listening) {

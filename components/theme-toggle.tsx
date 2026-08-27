@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useClientValue } from "@/lib/use-client-value";
 import { Moon, Sun } from "lucide-react";
 
 type Theme = "light" | "dark";
@@ -17,21 +18,35 @@ function apply(theme: Theme) {
   root.dataset.theme = theme;
 }
 
+function storedTheme(): Theme {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored === "light" || stored === "dark" ? stored : DEFAULT_THEME;
+  } catch {
+    return DEFAULT_THEME;
+  }
+}
+
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>(DEFAULT_THEME);
+  // The stored preference is read, not copied into state on mount. A
+  // click overrides it for the rest of the page. Painting the class onto
+  // <html> stays in an effect because it is a real DOM side effect, and
+  // it runs for the stored value too, not only for clicks.
+  const stored = useClientValue<Theme>(storedTheme, DEFAULT_THEME);
+  const [override, setOverride] = useState<Theme | null>(null);
+  const theme = override ?? stored;
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const initial: Theme =
-      stored === "light" || stored === "dark" ? stored : DEFAULT_THEME;
-    setTheme(initial);
-    apply(initial);
-  }, []);
+    apply(theme);
+  }, [theme]);
 
   function set(next: Theme) {
-    setTheme(next);
-    localStorage.setItem(STORAGE_KEY, next);
-    apply(next);
+    setOverride(next);
+    try {
+      localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      // private mode: the choice still applies for this page
+    }
   }
 
   const resolved: "light" | "dark" = theme;

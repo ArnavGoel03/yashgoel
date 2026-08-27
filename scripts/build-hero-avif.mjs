@@ -83,7 +83,15 @@ async function main() {
   hero.inlineAvifHeight = meta.height ?? 0;
   hero._inlineAvifSrc = hero.src;
 
-  await writeFile(PHOTOS_JSON, JSON.stringify(photos, null, 2) + "\n", "utf8");
+  // Four spaces, which is how content/photos.json is written on disk.
+  // Emitting two meant every `pnpm build` reformatted the whole file and
+  // left a 1425-line diff in the working tree that had no content in it.
+  const next = JSON.stringify(photos, null, 4) + "\n";
+  if (next === (await readFile(PHOTOS_JSON, "utf8").catch(() => null))) {
+    console.log("[build-hero-avif] Unchanged.");
+    return;
+  }
+  await writeFile(PHOTOS_JSON, next, "utf8");
   console.log("[build-hero-avif] Saved.");
 }
 

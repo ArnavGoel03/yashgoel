@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import type { LibraryItem } from "@/lib/library";
 
 type Tab = "reading" | "watching";
@@ -100,7 +100,6 @@ export function LibraryTabs({
   initialTab: Tab;
 }) {
   const [tab, setTab] = useState<Tab>(initialTab);
-  const router = useRouter();
   const sp = useSearchParams();
 
   // Keep URL in sync without triggering server navigation.

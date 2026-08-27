@@ -119,7 +119,7 @@ export interface Review {
   body: string;
 }
 
-export interface ReviewSummary extends Omit<Review, "body"> {}
+export type ReviewSummary = Omit<Review, "body">;
 
 export interface Photo {
   src: string;
@@ -220,4 +220,4 @@ export interface Primer {
   body: string;
 }
 
-export interface PrimerSummary extends Omit<Primer, "body"> {}
+export type PrimerSummary = Omit<Primer, "body">;

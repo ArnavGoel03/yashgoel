@@ -44,4 +44,3 @@ next-env.d.ts
 .claude/
 _local/
 .wrangler/
-pnpm-workspace.yaml

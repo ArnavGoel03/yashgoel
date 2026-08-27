@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useClientValue } from "@/lib/use-client-value";
 import Link from "next/link";
 import { toast } from "@/lib/toast";
 import {
@@ -70,13 +71,17 @@ export function TodayTracker() {
   // fallback (no hydration mismatch); a layout effect swaps in the real
   // localStorage state before paint, so there's no flash of seed data.
   const [state, dispatch] = useReducer(reducer, undefined, defaultState);
-  const [hydrated, setHydrated] = useState(false);
+  // false on the server, true from the client's first render, so the
+  // persist effect below still cannot fire before the real state arrives.
+  const hydrated = useClientValue(() => true, false);
   const [iso] = useState(() => todayISO());
   const [manageOpen, setManageOpen] = useState(false);
 
+  // dispatch stays in an effect on purpose: the server cannot read
+  // localStorage, so the reducer seeds with defaults, matches the
+  // server HTML, and the real state is swapped in after mount.
   useEffect(() => {
     dispatch({ type: "hydrate", state: loadState() });
-    setHydrated(true);
   }, []);
 
   // Persist after every change, but only once we've hydrated (so the

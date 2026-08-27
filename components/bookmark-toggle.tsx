@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+import { useClientValue } from "@/lib/use-client-value";
 import { cn } from "@/lib/utils";
 
 const STORAGE_KEY = "yashgoel-shelf-v1";
@@ -23,7 +24,30 @@ export function readShelf(): string[] {
   }
 }
 
-function writeShelf(items: string[]): void {
+// useSyncExternalStore compares snapshots by identity and calls the
+// reader on every render, so the parsed array is memoised against the raw
+// string it came from. readShelf() keeps returning a fresh array because
+// callers mutate what they get back.
+const EMPTY_SHELF: string[] = [];
+let lastShelfRaw: string | null = null;
+let lastShelfItems: string[] = EMPTY_SHELF;
+
+export function shelfSnapshot(): string[] {
+  if (typeof window === "undefined") return EMPTY_SHELF;
+  let raw: string | null = null;
+  try {
+    raw = localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return EMPTY_SHELF;
+  }
+  if (raw !== lastShelfRaw) {
+    lastShelfRaw = raw;
+    lastShelfItems = readShelf();
+  }
+  return lastShelfItems;
+}
+
+export function writeShelf(items: string[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     window.dispatchEvent(
@@ -56,16 +80,16 @@ export function onShelfChange(cb: (items: string[]) => void): () => void {
  * stops propagation to avoid navigating when the toggle fires.
  */
 export function BookmarkToggle({ id }: { id: string }) {
-  const [bookmarked, setBookmarked] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setBookmarked(readShelf().includes(id));
-    setHydrated(true);
-    return onShelfChange((items) => {
-      setBookmarked(items.includes(id));
-    });
-  }, [id]);
+  // readShelf + onShelfChange are already a store with a subscription,
+  // so this subscribes to it rather than mirroring it into local state.
+  // Every card on a listing page runs this hook, and the old version
+  // re-rendered all of them a second time on mount.
+  const bookmarked = useSyncExternalStore(
+    onShelfChange,
+    () => readShelf().includes(id),
+    () => false,
+  );
+  const hydrated = useClientValue(() => true, false);
 
   function toggle(e: React.MouseEvent) {
     e.preventDefault();
@@ -74,8 +98,8 @@ export function BookmarkToggle({ id }: { id: string }) {
     const next = current.includes(id)
       ? current.filter((x) => x !== id)
       : [...current, id];
+    // writeShelf notifies onShelfChange, which re-reads the snapshot.
     writeShelf(next);
-    setBookmarked(next.includes(id));
   }
 
   // Render the unfilled state until hydration to avoid SSR/CSR

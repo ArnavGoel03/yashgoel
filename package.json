@@ -54,13 +54,5 @@
   },
   "trustedDependencies": [
     "unrs-resolver"
-  ],
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp",
-      "@sentry/cli",
-      "unrs-resolver",
-      "msw"
-    ]
-  }
+  ]
 }

@@ -484,9 +484,13 @@ export function importData(raw: string): HabitState | null {
   const obj = parsed as Record<string, unknown>;
   const candidate =
     obj.app === "yashgoel-today" && obj.state ? obj.state : parsed;
-  const normalized = normalizeState(candidate);
-  // Guard against an empty import overwriting real data with nothing:
-  // an import with no habits is treated as invalid.
-  if (!normalized.habits.length) return null;
-  return normalized;
+  // Guard against an empty import overwriting real data with nothing: an
+  // import with no habits is treated as invalid. This has to read the
+  // incoming payload, not the normalized one. normalizeState() backfills
+  // the eight default habits when it finds none, so the check below used
+  // to see a length of 8 for a file that carried zero and let it through,
+  // silently replacing the reader's habits with the defaults.
+  const incoming = (candidate as Record<string, unknown> | null)?.habits;
+  if (!Array.isArray(incoming) || incoming.length === 0) return null;
+  return normalizeState(candidate);
 }

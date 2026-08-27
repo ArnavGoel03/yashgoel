@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Copy } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
-import { onShelfChange, readShelf } from "@/components/bookmark-toggle";
+import {
+  onShelfChange,
+  readShelf,
+  shelfSnapshot,
+  writeShelf,
+} from "@/components/bookmark-toggle";
 import { toast } from "@/lib/toast";
 import type { ReviewSummary } from "@/lib/types";
 
-const STORAGE_KEY = "yashgoel-shelf-v1";
 const HASH_PREFIX = "#shelf=";
 
 /**
@@ -41,50 +45,39 @@ function clearHash() {
 }
 
 export function ShelfClient({ reviews }: { reviews: ReviewSummary[] }) {
-  const [ids, setIds] = useState<string[] | null>(null);
+  // The shelf is a store with a subscription, so this reads it rather
+  // than copying it into state on mount. null on the server keeps the
+  // "not loaded yet" rendering exactly as it was.
+  const ids = useSyncExternalStore(
+    onShelfChange,
+    shelfSnapshot,
+    () => null as string[] | null,
+  );
 
+  // Merging a shared shelf out of the URL hash is a genuine side effect:
+  // it writes storage, announces the change and raises a toast. It no
+  // longer sets component state, because writeShelf notifies the
+  // subscription above and the new value arrives that way.
   useEffect(() => {
-    // Step 1: hydrate the local shelf from storage.
-    const local = readShelf();
-
-    // Step 2: if the URL hash carries a shared shelf payload, merge
-    // those IDs into the local shelf (skipping items that aren't in
-    // the catalog or are already saved). Preserves the user's most
-    // recent saves at the end so the freshly-pulled ones land on top
-    // when displayed reverse-chronologically.
     const hashIds = readHashShelf();
-    if (hashIds && hashIds.length > 0) {
-      const valid = hashIds.filter((id) =>
-        reviews.some((r) => `${r.kind}/${r.slug}` === id),
+    if (!hashIds || hashIds.length === 0) return;
+    const valid = hashIds.filter((id) =>
+      reviews.some((r) => `${r.kind}/${r.slug}` === id),
+    );
+    const local = readShelf();
+    const known = new Set(local);
+    const newOnes = valid.filter((id) => !known.has(id));
+    if (newOnes.length > 0) {
+      // The reader's most recent saves stay at the end so freshly
+      // pulled ones land on top when displayed newest-first.
+      writeShelf([...local, ...newOnes]);
+      toast(
+        `Added ${newOnes.length} item${newOnes.length === 1 ? "" : "s"} from the link`,
       );
-      const known = new Set(local);
-      const newOnes = valid.filter((id) => !known.has(id));
-      if (newOnes.length > 0) {
-        const merged = [...local, ...newOnes];
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-          window.dispatchEvent(
-            new CustomEvent("shelf:change", { detail: merged.slice() }),
-          );
-        } catch {
-          // ignore quota errors
-        }
-        setIds(merged);
-        toast(
-          `Added ${newOnes.length} item${newOnes.length === 1 ? "" : "s"} from the link`,
-        );
-      } else {
-        setIds(local);
-        if (valid.length > 0) {
-          toast("Already on your shelf", { tone: "info" });
-        }
-      }
-      clearHash();
-    } else {
-      setIds(local);
+    } else if (valid.length > 0) {
+      toast("Already on your shelf", { tone: "info" });
     }
-
-    return onShelfChange((next) => setIds(next));
+    clearHash();
   }, [reviews]);
 
   function copyShareLink() {

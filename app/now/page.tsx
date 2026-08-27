@@ -36,6 +36,7 @@ export default function NowPage() {
     month: "long",
     day: "numeric",
     year: "numeric",
+    timeZone: "UTC",
   });
 
   return (

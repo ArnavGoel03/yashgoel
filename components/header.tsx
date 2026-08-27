@@ -81,10 +81,16 @@ export function Header() {
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  // Navigating closes both menus. Comparing the previous pathname during
+  // render is React's documented reset-on-change pattern: the effect this
+  // replaces let the new page paint with the drawer still open for a
+  // frame before closing it.
+  const [lastPath, setLastPath] = useState(pathname);
+  if (lastPath !== pathname) {
+    setLastPath(pathname);
     setMenuOpen(false);
     setMoreOpen(false);
-  }, [pathname]);
+  }
 
   useEffect(() => {
     if (menuOpen) {

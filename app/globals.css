@@ -141,6 +141,28 @@
   header[class*="sticky"] {
     padding-top: env(safe-area-inset-top);
   }
+  /* /photos: every photo element carries a `view-transition-name`
+     of the form vt-<caption-slug>. When the same photo appears in both
+     the tile grid and the lightbox, the browser morphs one into the
+     other instead of cutting. iOS-Photos-style continuous animation.
+
+     This selects `*` (every transition group) rather than the photos by
+     name, because the name is generated per caption and cannot be
+     enumerated in CSS. It sits above the two named rules so the cascade
+     lets `root` and `product-photo` keep their own timings; everything
+     else, which today is only the vt-<slug> photos, lands here.
+
+     It used to read `::view-transition-old([class*="vt-"])`. An
+     attribute selector is not valid in a pt-name-selector, so the rule
+     matched nothing and these photos never got their timing. It also
+     failed to parse in Turbopack, which is what took `next dev` down. */
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 380ms;
+    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+    mix-blend-mode: normal;
+  }
+
   /* Cross-page view transitions (baseline fade). React/Next trigger the
      named transition for route changes when `experimental.viewTransition`
      is enabled in next.config. Users with reduced-motion preference skip
@@ -159,17 +181,6 @@
   ::view-transition-new(product-photo) {
     animation-duration: 320ms;
     animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  /* /photos: every photo element carries a `view-transition-name`
-     of the form vt-<caption-slug>. When the same photo appears in both
-     the tile grid and the lightbox, the browser morphs one into the
-     other instead of cutting. iOS-Photos-style continuous animation. */
-  ::view-transition-old([class*="vt-"]),
-  ::view-transition-new([class*="vt-"]) {
-    animation-duration: 380ms;
-    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
-    mix-blend-mode: normal;
   }
 
   /* Tour card mount: opacity-only fade so the JS-set inline transforms
@@ -306,7 +317,7 @@
   }
   .dark .bg-paper-grain::after {
     /* White-on-black dot-noise via `screen` blend lifts the average
-       lightness of the plate — at 0.04 alpha + 0.5 opacity the hero
+       lightness of the plate , at 0.04 alpha + 0.5 opacity the hero
        was reading visibly grayer than the rest of the dark page. Cut
        both so the texture survives as faint specks but the plate
        stays the same near-black as the body. */
@@ -354,7 +365,7 @@
     line-height: 1;
   }
 
-  /* Drop cap. Wrapper class — apply to the prose container; the
+  /* Drop cap. Wrapper class , apply to the prose container; the
      drop cap lands on the first paragraph's first letter. Fraunces
      SOFT 50 + lnum so the cap sits flush against the body copy with
      proper optical alignment. */
@@ -374,7 +385,7 @@
 
   /* Stagger reveal for product card grids. Each card mounts with a
      short opacity + lift animation, delayed by --stagger which the
-     parent sets via inline style. Pure CSS — no JS observer, no
+     parent sets via inline style. Pure CSS , no JS observer, no
      layout shift, no CLS hit. Reduced-motion users get the cards
      already in place via the override above. */
   @keyframes card-in {

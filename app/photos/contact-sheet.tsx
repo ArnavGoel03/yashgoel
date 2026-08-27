@@ -19,10 +19,8 @@ const STEP = 60;
  */
 export function ContactSheet({
   photos,
-  lightboxIndexOf,
 }: {
   photos: { photo: Photo; index: number }[];
-  lightboxIndexOf?: (src: string) => number;
 }) {
   const [visible, setVisible] = useState(Math.min(INITIAL, photos.length));
 

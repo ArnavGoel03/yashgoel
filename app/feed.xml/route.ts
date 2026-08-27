@@ -20,7 +20,7 @@ function esc(s: string): string {
       // review name/summary (easy to paste in from a PDF/terminal) makes the
       // ENTIRE feed unparseable for every reader, not just that item. Strip
       // them before escaping.
-      // eslint-disable-next-line no-control-regex
+
       .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")

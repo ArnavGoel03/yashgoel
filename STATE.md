@@ -90,6 +90,13 @@ The probe ignores anything already inside a clipping ancestor, so a
 filter rail or a wide table in its own `overflow-x-auto` scroller reads
 as healthy. Only elements that actually widen the document are reported.
 
+The 22 defaults are index and static pages, and the site has 216 URLs in
+its sitemap. That gap hid two more failures, so the defaults now include
+one detail page per section, and the whole catalogue can be swept with
+`ROUTES_FILE=<file of paths> node scripts/check-overflow.mjs`. `SETTLE`
+lowers the per-route wait for a warm CDN; the 2s default suits a cold
+local server.
+
 Three separate causes were live on production until 2026-08-27, all
 fixed in the same commit:
 
@@ -108,19 +115,112 @@ fixed in the same commit:
    for a padded parent, but it is rendered outside `<Container>`, so
    there was no padding to cancel and it simply ran 24px past both edges.
 
+A fourth cause, found on 2026-08-27 by the first full-sitemap sweep:
+the review detail header put the title and the large verdict stamp in one
+non-wrapping flex row. The stamp has a fixed intrinsic width and the
+title cannot shrink below its longest word, so ten detail pages ran wide
+at 320px and `/supplements/nutricost-vitamin-b12` ran 407px in a 390px
+viewport, which is a phone. The row now wraps, with the title carrying a
+flex-basis so the break threshold is explicit rather than a function of
+how long a product name happens to be.
+
 The class to watch for: a negative horizontal offset or margin is only
 safe when something above it clips, and on this site that means a
 full-bleed section carrying `overflow-hidden` (the homepage hero does
-this correctly at `app/page.tsx:133`).
+this correctly at `app/page.tsx:133`). The second class: any flex row
+pairing prose with a fixed-width ornament needs a wrap rule.
 
-### Known-red at HEAD (not caused by the layout work)
+### ~~Known-red at HEAD (not caused by the layout work)~~
 
-`pnpm test` reports 8 failures out of 124, identical on a clean checkout
-of `edb2c87`: `uvFilters` name resolution, changelog/lastUpdated ISO
-dates, per-kind review sort order, the hidden-review filters, and one
-habits import case. These are content-layer, not layout. They were
-verified pre-existing with a detached worktree before the layout commit
-landed. Fixing them is open work.
+~~`pnpm test` reports 8 failures out of 124.~~ **Cleared 2026-08-27.**
+All eight are fixed and the suite is 142 passing. What each one actually
+was is worth keeping, because six were real defects and two were stale
+assertions:
+
+- **`importData` accepted an empty file.** The guard read the *normalized*
+  state, and `normalizeState()` backfills the eight default habits when it
+  finds none, so it always saw a length of 8. Importing an empty export
+  silently replaced the reader's habits with defaults. It now reads the
+  incoming payload.
+- **`findUVFilter` missed every multi-alias filter.** Three registry
+  entries hold two trade names in one string ("Avobenzone / Parsol 1789")
+  and the whole string was the index key, so neither name resolved. Each
+  is indexed separately now. It also now tolerates a trailing
+  concentration, because the author writes "Octocrylene 10%" and the
+  strength is not part of the INCI name.
+- **The changelog invented dates.** An entry may be written as "2025" when
+  the day is not known. `new Date("2025")` is January 1st, so the page
+  printed "Jan 1, 2025" for something that only ever claimed a year. Date
+  handling now lives in `lib/dates.ts`, renders at the precision given,
+  and reads the parts off the string so a date does not shift a day for
+  readers west of UTC.
+- **`getAllReviewsIncludingHidden` dropped cross-listed reviews**, so the
+  admin view of a section was not a superset of the public one.
+- **Prev/next was ordered by ranking score.** `PrevNext` labels the links
+  "Older" and "Newer"; the list behind them is now date-sorted.
+- **The smoke tests covered three of the eight kinds**, because the file
+  kept its own copy of the kind list. It imports `KINDS` now, which is
+  what the count assertion was failing on.
+
+### Client state: `lib/use-client-value.ts` (added 2026-08-27)
+
+Nineteen components read a browser-only value (localStorage, the clock, a
+capability check, the query string) with `useState` plus a mount effect
+that set the real value. That renders each of them twice on load and was
+the whole of the `react-hooks/set-state-in-effect` error list. They now
+read through `useSyncExternalStore`, which gets the value in one pass and
+makes the server-render value explicit.
+
+Two patterns cover almost all of it:
+
+- **A value the browser owns:** `useClientValue(read, serverValue)`. The
+  reader must return a primitive or a cached reference, or React loops.
+  A value another component can change wants a real subscription instead,
+  as `components/bookmark-toggle.tsx` does with the shelf.
+- **Writable state seeded from the URL** (both builders, the listing
+  filters): read the URL through `useClientValue` with `undefined` as the
+  server snapshot, then seed during render. Seeding during render rather
+  than from an effect is what stops the URL-writeback effect firing once
+  with the pre-hydration defaults and blanking the share link it was
+  restoring from.
+
+`app/shelf` and `components/bookmark-toggle` subscribe to the shelf store
+directly instead of mirroring it into state. Verified against production
+with a headless browser: filter and sort seeding produce byte-identical
+card ordering, and no page logs a hydration warning.
+
+### Toolchain
+
+`pnpm test` could not run at all: pnpm 11 stopped reading
+`pnpm.onlyBuiltDependencies` from package.json and every command failed
+with `ERR_PNPM_IGNORED_BUILDS`. The setting now lives in
+`pnpm-workspace.yaml` as `allowBuilds`, and that file is no longer
+gitignored, because ignoring it would leave a fresh clone or a CI runner
+with an unbuilt sharp and no image optimizer.
+
+`next dev` had been down on main. Two causes: two different slug names on
+one dynamic route (`app/routine/[parent]` and `[slug]`), fixed in
+`c4f05dc`, and `::view-transition-old([class*="vt-"])` in globals.css,
+which Turbopack refused to parse. An attribute selector is not valid in a
+pt-name-selector, so that rule had never matched anything and the /photos
+morph had never had its timing. It is `::view-transition-old(*)` now,
+placed above the two named rules so `root` and `product-photo` keep
+theirs.
+
+## Open, needs the owner
+
+```owner-actions
+what: Point `yashgoel.bio` at the site or take it off Vercel's env. Production sets `NEXT_PUBLIC_SITE_URL=https://yashgoel.bio`, so every one of the 216 sitemap URLs, every `<link rel="canonical">` and every `og:url` names that host, and it has no A record. Search engines are being handed a dead domain as the canonical for the whole site. `lib/site.ts` falls back to the vercel.app host, so removing the env var fixes it immediately if the domain is not wanted.
+why: DNS, or a Vercel dashboard env var, and a decision about which address is the real one.
+raised: 2026-08-27
+```
+
+```owner-actions
+what: Decide what to do about 128 em/en dashes across 60 files (11 of them in `content/`, which is your prose). The systemwide rule says purge them; rewriting punctuation inside your own sentences is not something I will do unasked. `~/.claude/scripts/purge-dashes.sh <file>` does it per file.
+why: it is your copy, and the substitution changes how the sentences read.
+raised: 2026-08-27
+```
+
 
 ## Scalability posture (1k/day baseline → 1M spike-ready)
 

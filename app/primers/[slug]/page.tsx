@@ -91,6 +91,7 @@ export default async function PrimerPage({ params }: Props) {
                 {new Date(primer.datePublished).toLocaleDateString("en-US", {
                   month: "long",
                   year: "numeric",
+                  timeZone: "UTC",
                 })}
               </span>
             </span>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ISO_ANY_PRECISION } from "@/lib/dates";
 
 import { KINDS } from "@/lib/types";
 import {
@@ -166,8 +167,8 @@ export const reviewFrontmatter = z.object({
         .default([]),
       care: z.array(z.enum(GARMENT_CARE_CODES)).default([]),
       season: z.array(z.enum(GARMENT_SEASONS)).default([]),
-      // YYYY-MM or YYYY-MM-DD, same convention as `changelog`. Format
-      // is asserted by tests/data-integrity.test.ts alongside every
+      // Same grammar as `changelog`, ISO_ANY_PRECISION in lib/dates.ts.
+      // Format is asserted by tests/data-integrity.test.ts alongside every
       // other date on the site, so there is one date rule, not two.
       firstWorn: z.string().min(1),
       wearsPerMonth: z.number().positive().max(31).optional(),
@@ -194,7 +195,10 @@ export const reviewFrontmatter = z.object({
   changelog: z
     .array(
       z.object({
-        date: z.string(),
+        // Year, year-month or full day. An entry is allowed to be vague
+        // because the author is not always sure of the day, and the
+        // renderer prints only the fields that are present.
+        date: z.string().regex(ISO_ANY_PRECISION, "expected YYYY, YYYY-MM or YYYY-MM-DD"),
         note: z.string().min(1),
       }),
     )

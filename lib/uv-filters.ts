@@ -5,10 +5,10 @@
  *               inorganic = "mineral" filter (metal oxide, scatters/absorbs UV).
  *
  * `generation`  modern = post-2000 photostable filters (Tinosorbs, Uvinuls,
- *               Mexoryls, ZinClear, etc.) — broad-spectrum, photostable, used
+ *               Mexoryls, ZinClear, etc.) , broad-spectrum, photostable, used
  *               widely in EU / Asia / Australia / India.
  *               legacy = pre-2000 filters (Avobenzone, Octocrylene, Homosalate,
- *               Octinoxate, Oxybenzone) — still the bulk of US-market
+ *               Octinoxate, Oxybenzone) , still the bulk of US-market
  *               sunscreens because the FDA hasn't approved the modern filters.
  *
  * `coverage`    which part of the UV spectrum the filter blocks.
@@ -27,7 +27,7 @@ export type UVFilter = {
   generation: "modern" | "legacy";
   /** Which part of UV the filter primarily covers. */
   coverage: ("UVB" | "UVA-II" | "UVA-I")[];
-  /** One-line plain-English note about the filter — what's distinctive. */
+  /** One-line plain-English note about the filter , what's distinctive. */
   note: string;
   /** Markets where the filter is widely approved at writing time. */
   approvedIn: ("US" | "EU" | "IN" | "UK" | "AU" | "JP" | "KR")[];
@@ -99,7 +99,7 @@ const FILTERS: UVFilter[] = [
     approvedIn: ["EU", "IN", "UK", "AU", "JP", "KR", "US"],
   },
 
-  // ── Legacy (pre-2000) organic filters — still the US backbone ───
+  // ── Legacy (pre-2000) organic filters , still the US backbone ───
   {
     inci: "Butyl Methoxydibenzoylmethane",
     alias: "Avobenzone / Parsol 1789",
@@ -175,9 +175,20 @@ const FILTERS: UVFilter[] = [
 const BY_INCI = new Map<string, UVFilter>(
   FILTERS.map((f) => [normalize(f.inci), f]),
 );
+// Three entries carry more than one trade name in a single `alias` string,
+// as in "Avobenzone / Parsol 1789". Indexing the whole string meant neither
+// name on its own reached the filter, so a review listing Avobenzone got no
+// category and no note. Each name is indexed separately; the display string
+// is untouched.
 const BY_ALIAS = new Map<string, UVFilter>(
   FILTERS.flatMap((f) =>
-    f.alias ? [[normalize(f.alias), f] as const] : [],
+    f.alias
+      ? f.alias
+          .split("/")
+          .map((a) => normalize(a))
+          .filter(Boolean)
+          .map((a) => [a, f] as const)
+      : [],
   ),
 );
 
@@ -185,9 +196,18 @@ function normalize(s: string): string {
   return s.toLowerCase().replace(/[\s-]+/g, " ").trim();
 }
 
-/** Look up a filter by INCI name or alias. Case- and dash-insensitive. */
+/**
+ * Look up a filter by INCI name or alias. Case- and dash-insensitive, and
+ * tolerant of a trailing concentration.
+ *
+ * Some entries carry the strength the author read off the bottle, as in
+ * "Octocrylene 10%". That is his data and it stays on screen; it just is
+ * not part of the INCI name, so it is trimmed before the lookup. Without
+ * this, every filter on the Anthelios SPF 100 entry missed the registry
+ * and rendered with no category and no note.
+ */
 export function findUVFilter(name: string): UVFilter | null {
-  const k = normalize(name);
+  const k = normalize(name.replace(/\s*\d+(?:\.\d+)?\s*%\s*$/, ""));
   return BY_INCI.get(k) ?? BY_ALIAS.get(k) ?? null;
 }
 

@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { createPortal } from "react-dom";
 
 export type TourStep = {
@@ -23,6 +29,27 @@ function clamp(n: number, lo: number, hi: number) {
  * to avoid the per-event re-render jitter of the previous setTimeout
  * implementation.
  */
+// The window is an external store with a resize event, so it is read
+// through useSyncExternalStore instead of being copied into state by an
+// effect. The snapshot is cached because it is compared by identity.
+const SERVER_VIEWPORT = { w: 0, h: 0 };
+let viewportCache = SERVER_VIEWPORT;
+
+function readViewport(): { w: number; h: number } {
+  if (
+    viewportCache.w !== window.innerWidth ||
+    viewportCache.h !== window.innerHeight
+  ) {
+    viewportCache = { w: window.innerWidth, h: window.innerHeight };
+  }
+  return viewportCache;
+}
+
+function subscribeToViewport(onChange: () => void): () => void {
+  window.addEventListener("resize", onChange);
+  return () => window.removeEventListener("resize", onChange);
+}
+
 export function SiteTour({
   steps,
   storageKey,
@@ -33,23 +60,33 @@ export function SiteTour({
   onClose: () => void;
 }) {
   const [index, setIndex] = useState(0);
-  const [rect, setRect] = useState<DOMRect | null>(null);
-  const [viewport, setViewport] = useState({ w: 0, h: 0 });
+  // The measurement is tagged with the step it was taken for, so moving
+  // to a new step clears the highlight by derivation. Writing null into
+  // state on every step change meant a synchronous setState at the top
+  // of the effect below, and one extra render per step.
+  const [measured, setMeasured] = useState<{
+    key: string;
+    rect: DOMRect | null;
+  } | null>(null);
+  const viewport = useSyncExternalStore(
+    subscribeToViewport,
+    readViewport,
+    () => SERVER_VIEWPORT,
+  );
   const rafRef = useRef<number | null>(null);
 
   const step = steps[index];
+  const stepKey = step?.selector ?? "";
+  const rect = measured && measured.key === stepKey ? measured.rect : null;
 
   const updateRect = useCallback(() => {
-    if (!step?.selector) {
-      setRect(null);
-      return;
-    }
-    const el = document.querySelector(step.selector) as HTMLElement | null;
-    if (!el) {
-      setRect(null);
-      return;
-    }
-    setRect(el.getBoundingClientRect());
+    const selector = step?.selector;
+    if (!selector) return;
+    const el = document.querySelector(selector) as HTMLElement | null;
+    setMeasured({
+      key: selector,
+      rect: el ? el.getBoundingClientRect() : null,
+    });
   }, [step]);
 
   // Scroll the target into view once per step change, then keep the
@@ -57,20 +94,17 @@ export function SiteTour({
   // settle without us spamming setState on every animation frame
   // forever.
   useEffect(() => {
-    if (!step?.selector) {
-      setRect(null);
-      return;
-    }
-    const el = document.querySelector(step.selector) as HTMLElement | null;
-    if (!el) {
-      setRect(null);
-      return;
-    }
+    const selector = step?.selector;
+    // Nothing to measure. `rect` is already null by derivation, so there
+    // is no state to clear here.
+    if (!selector) return;
+    const el = document.querySelector(selector) as HTMLElement | null;
+    if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
     const start = performance.now();
     let frame: number;
     const tick = () => {
-      setRect(el.getBoundingClientRect());
+      setMeasured({ key: selector, rect: el.getBoundingClientRect() });
       if (performance.now() - start < 800) {
         frame = requestAnimationFrame(tick);
       }
@@ -83,7 +117,6 @@ export function SiteTour({
   // paint cadence, kills the every-event re-render that produced the
   // jitter the user reported.
   useEffect(() => {
-    setViewport({ w: window.innerWidth, h: window.innerHeight });
     const schedule = () => {
       if (rafRef.current !== null) return;
       rafRef.current = requestAnimationFrame(() => {
@@ -91,10 +124,9 @@ export function SiteTour({
         updateRect();
       });
     };
-    const onResize = () => {
-      setViewport({ w: window.innerWidth, h: window.innerHeight });
-      schedule();
-    };
+    // The viewport size itself comes from the store above; resizing only
+    // needs to re-measure the highlighted element.
+    const onResize = schedule;
     window.addEventListener("resize", onResize);
     window.addEventListener("scroll", schedule, { passive: true });
     return () => {

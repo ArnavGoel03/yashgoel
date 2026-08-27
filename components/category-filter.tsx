@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useClientValue } from "@/lib/use-client-value";
 import { Check, ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { ProductCard } from "./product-card";
 import { cn } from "@/lib/utils";
@@ -41,6 +42,79 @@ const VALID_SORTS = new Set<SortKey>([
 ]);
 const VALID_REGIONS = new Set<RegionFilter>(["all", "india", "usa", "uk"]);
 
+type InitialFilters = {
+  category: string | null;
+  sort: SortKey | null;
+  region: RegionFilter | null;
+  brand: string | null;
+  ingredient: string | null;
+};
+
+// The URL, localStorage and the reader's time zone are all browser-only,
+// so they are read through useSyncExternalStore rather than written into
+// state by a mount effect. The result is cached against the query string
+// because the snapshot is compared by identity on every render.
+let lastFilterSearch: string | null = null;
+let lastFilterInit: InitialFilters | null = null;
+
+function readInitialFilters(): InitialFilters {
+  const search = window.location.search;
+  if (search === lastFilterSearch && lastFilterInit) return lastFilterInit;
+  const sp = new URLSearchParams(search);
+  const s = sp.get(URL_KEY.sort);
+  const r = sp.get(URL_KEY.region);
+
+  let region: RegionFilter | null = null;
+  if (r && VALID_REGIONS.has(r as RegionFilter)) {
+    region = r as RegionFilter;
+  } else {
+    // No URL preference: try a saved preference, then fall back
+    // to a one-time timezone inference. The point is so an Indian
+    // visitor lands on the rupee price instantly instead of the
+    // dollar one; we don't want to be sticky beyond the first visit,
+    // so the saved preference wins on the second.
+    try {
+      const stored = localStorage.getItem("yashgoel-region-v1");
+      if (stored && VALID_REGIONS.has(stored as RegionFilter)) {
+        region = stored as RegionFilter;
+      }
+    } catch {
+      // ignore
+    }
+    if (!region) {
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+        // Conservative mapping, only obvious country-level matches.
+        // Mismatches are cheap (the reader can pick from the chips
+        // and that pick is then persisted), missed matches just
+        // leave the default "all" alone.
+        if (/^Asia\/(Kolkata|Calcutta|Colombo)$/.test(tz)) region = "india";
+        else if (/^Europe\/(London|Belfast|Isle_of_Man|Edinburgh|Cardiff|Dublin)$/.test(tz)) region = "uk";
+        else if (/^America\/(New_York|Detroit|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Indianapolis|Indiana\/.+|Kentucky\/.+|North_Dakota\/.+|Boise|Juneau|Adak|Sitka|Yakutat|Nome|Metlakatla|Menominee|Honolulu)$/.test(tz)) region = "usa";
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  lastFilterSearch = search;
+  lastFilterInit = {
+    category: sp.get(URL_KEY.category),
+    sort: s && VALID_SORTS.has(s as SortKey) ? (s as SortKey) : null,
+    region,
+    brand: sp.get(URL_KEY.brand),
+    ingredient: sp.get(URL_KEY.ingredient),
+  };
+  return lastFilterInit;
+}
+
+function useInitialFilters() {
+  return useClientValue<InitialFilters | undefined>(
+    readInitialFilters,
+    undefined,
+  );
+}
+
 export function CategoryFilter({ reviews }: { reviews: ReviewSummary[] }) {
   const [active, setActive] = useState<string>("all");
   const [sort, setSort] = useState<SortKey>("recent");
@@ -48,70 +122,36 @@ export function CategoryFilter({ reviews }: { reviews: ReviewSummary[] }) {
   const [ingredient, setIngredient] = useState<string>("all");
   const [brand, setBrand] = useState<string>("all");
   const [sheetOpen, setSheetOpen] = useState(false);
-  const hydratedRef = useRef(false);
 
-  useEffect(() => {
-    const sp = new URLSearchParams(window.location.search);
-    const c = sp.get(URL_KEY.category);
-    const s = sp.get(URL_KEY.sort);
-    const r = sp.get(URL_KEY.region);
-    const b = sp.get(URL_KEY.brand);
-    const ing = sp.get(URL_KEY.ingredient);
-    if (c) setActive(c);
-    if (s && VALID_SORTS.has(s as SortKey)) setSort(s as SortKey);
-    if (r && VALID_REGIONS.has(r as RegionFilter)) {
-      setRegion(r as RegionFilter);
-    } else {
-      // No URL preference: try a saved preference, then fall back
-      // to a one-time timezone inference. The point is so an Indian
-      // visitor lands on ₹ instantly instead of $; we don't want to
-      // be sticky beyond the first visit, so the saved preference
-      // wins on the second.
-      let initial: RegionFilter | null = null;
-      try {
-        const stored = localStorage.getItem("yashgoel-region-v1");
-        if (stored && VALID_REGIONS.has(stored as RegionFilter)) {
-          initial = stored as RegionFilter;
-        }
-      } catch {
-        // ignore
-      }
-      if (!initial) {
-        try {
-          const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-          // Conservative mapping — only obvious country-level matches.
-          // Mismatches are cheap (the reader can pick from the chips
-          // and that pick is then persisted), missed matches just
-          // leave the default "all" alone.
-          if (/^Asia\/(Kolkata|Calcutta|Colombo)$/.test(tz)) initial = "india";
-          else if (/^Europe\/(London|Belfast|Isle_of_Man|Edinburgh|Cardiff|Dublin)$/.test(tz)) initial = "uk";
-          else if (/^America\/(New_York|Detroit|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Indianapolis|Indiana\/.+|Kentucky\/.+|North_Dakota\/.+|Boise|Juneau|Adak|Sitka|Yakutat|Nome|Metlakatla|Menominee|Honolulu)$/.test(tz)) initial = "usa";
-        } catch {
-          // ignore
-        }
-      }
-      if (initial) setRegion(initial);
-    }
-    if (b) setBrand(b);
-    if (ing) setIngredient(ing);
-    hydratedRef.current = true;
-  }, []);
+  // Applied during render, so the two persistence effects below never
+  // observe the pre-hydration defaults with `hydrated` already true and
+  // write "all" over the reader's saved region.
+  const initial = useInitialFilters();
+  const [hydrated, setHydrated] = useState(false);
+  if (!hydrated && initial !== undefined) {
+    setHydrated(true);
+    if (initial.category) setActive(initial.category);
+    if (initial.sort) setSort(initial.sort);
+    if (initial.region) setRegion(initial.region);
+    if (initial.brand) setBrand(initial.brand);
+    if (initial.ingredient) setIngredient(initial.ingredient);
+  }
 
   // Persist the visitor's region pick once they've made one. Stored
   // separately from the URL so the preference survives across pages
   // even when the URL itself doesn't carry a region param.
   useEffect(() => {
-    if (!hydratedRef.current) return;
+    if (!hydrated) return;
     try {
       if (region === "all") localStorage.removeItem("yashgoel-region-v1");
       else localStorage.setItem("yashgoel-region-v1", region);
     } catch {
       // ignore
     }
-  }, [region]);
+  }, [region, hydrated]);
 
   useEffect(() => {
-    if (!hydratedRef.current) return;
+    if (!hydrated) return;
     const sp = new URLSearchParams();
     if (active !== "all") sp.set(URL_KEY.category, active);
     if (sort !== "recent") sp.set(URL_KEY.sort, sort);
@@ -128,7 +168,7 @@ export function CategoryFilter({ reviews }: { reviews: ReviewSummary[] }) {
     ) {
       window.history.replaceState(null, "", next);
     }
-  }, [active, sort, region, brand, ingredient]);
+  }, [active, sort, region, brand, ingredient, hydrated]);
 
   // Lock body scroll while the sheet is open.
   useEffect(() => {
@@ -408,17 +448,19 @@ function ListingGrid({
   priceRegion?: Region;
 }) {
   const gridRef = useRef<HTMLDivElement | null>(null);
-  const [showHint, setShowHint] = useState(false);
-
   // One-time hint chip. Stored under a v1 key so we can reset later
-  // by bumping the suffix.
-  useEffect(() => {
+  // by bumping the suffix. Whether it has been seen before is read from
+  // storage; dismissing it this session is separate state on top.
+  const hintUnseen = useClientValue(() => {
     try {
-      if (!localStorage.getItem("yashgoel-jk-hint-v1")) setShowHint(true);
+      return !localStorage.getItem("yashgoel-jk-hint-v1");
     } catch {
       // private mode etc.
+      return false;
     }
-  }, []);
+  }, false);
+  const [hintDismissed, setHintDismissed] = useState(false);
+  const showHint = hintUnseen && !hintDismissed;
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -442,7 +484,7 @@ function ListingGrid({
       cards[next]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
       // First key press also dismisses the hint.
       if (showHint) {
-        setShowHint(false);
+        setHintDismissed(true);
         try {
           localStorage.setItem("yashgoel-jk-hint-v1", "1");
         } catch {

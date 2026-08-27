@@ -1,12 +1,5 @@
+import { formatDate } from "@/lib/dates";
 import type { Review } from "@/lib/types";
-
-function fmt(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 export function ReviewChangelog({ review }: { review: Review }) {
   if (review.changelog.length === 0) return null;
@@ -28,7 +21,7 @@ export function ReviewChangelog({ review }: { review: Review }) {
         {entries.map((e, i) => (
           <li key={`${e.date}-${i}`} className="flex gap-4 text-sm">
             <span className="w-28 shrink-0 font-mono text-xs text-stone-500 tabular-nums dark:text-stone-400">
-              {fmt(e.date)}
+              {formatDate(e.date)}
             </span>
             <span className="flex-1 text-stone-700 dark:text-stone-300">{e.note}</span>
           </li>

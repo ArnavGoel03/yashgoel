@@ -32,10 +32,18 @@
 
 const PORT = Number(process.env.CDP_PORT || 9333);
 const BASE = process.env.BASE || "http://127.0.0.1:3001";
+// Per-route settle. 2s is right for a cold local server; a warm CDN needs far
+// less, and a full-sitemap sweep is 200+ routes, so the difference is minutes.
+const SETTLE = Number(process.env.SETTLE || 2000);
 const WIDTHS = (process.env.WIDTHS || "320,390,768,1024,1280,1440")
   .split(",")
   .map(Number);
-const ROUTES = (
+// ROUTES_FILE takes one route per line, which is how a full sitemap sweep is
+// run: the 22 defaults below are the index and static pages, not the ~190
+// review detail pages.
+const ROUTES = process.env.ROUTES_FILE
+  ? (await import("node:fs")).readFileSync(process.env.ROUTES_FILE, "utf8").split("\n").map((l) => l.trim()).filter(Boolean)
+  : (
   process.env.ROUTES ||
   [
     "/",
@@ -60,6 +68,15 @@ const ROUTES = (
     "/primers",
     "/photos",
     "/subscribe",
+    // One review detail page per section. The index pages alone missed
+    // a verdict stamp that pushed /supplements/nutricost-vitamin-b12 to
+    // 407px of document in a 390px viewport. For the whole catalogue,
+    // point ROUTES_FILE at a file of paths from the sitemap.
+    "/skincare/tinkle-dermaplaning-razors",
+    "/supplements/nutricost-vitamin-b12",
+    "/oral-care",
+    "/hair-care/padagis-ketoconazole-2-shampoo",
+    "/essentials/whoop-peak-5-0",
   ].join(",")
 ).split(",");
 
@@ -108,7 +125,8 @@ ws.onmessage = (m) => {
   if (msg.id && pending.has(msg.id)) {
     const { resolve, reject } = pending.get(msg.id);
     pending.delete(msg.id);
-    msg.error ? reject(new Error(JSON.stringify(msg.error))) : resolve(msg.result);
+    if (msg.error) reject(new Error(JSON.stringify(msg.error)));
+    else resolve(msg.result);
   }
 };
 const send = (method, params = {}) =>
@@ -132,7 +150,7 @@ for (const route of ROUTES) {
       mobile: width < 700,
     });
     await send("Page.navigate", { url: BASE + route });
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, SETTLE));
     let out;
     try {
       const r = await send("Runtime.evaluate", {

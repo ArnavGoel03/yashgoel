@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { ISO_DAY, ISO_ANY_PRECISION } from "@/lib/dates";
 import path from "node:path";
 import matter from "gray-matter";
 import { describe, expect, it } from "vitest";
@@ -59,8 +60,9 @@ function mdxFiles(dir: string): string[] {
     .map((f) => path.join(full, f));
 }
 
-const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
-const ISO_DAY_OR_MONTH = /^\d{4}-\d{2}(-\d{2})?$/;
+// Grammar lives in lib/dates.ts so the schema, the renderer and this
+// gate cannot drift apart.
+const ISO_DAY_OR_MONTH = ISO_ANY_PRECISION;
 
 // Every review file, loaded once including hidden + retired so the
 // integrity checks cover the entire on-disk catalog, not just the

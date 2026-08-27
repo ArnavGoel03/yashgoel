@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useClientValue } from "@/lib/use-client-value";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Search, X } from "lucide-react";
 import { safeInternalHref } from "@/lib/safe-url";
 
@@ -207,27 +207,49 @@ function decodeState(raw: string | null): {
 
 // ── Component ───────────────────────────────────────────────────────
 
-export function RoutineBuilder({ catalog }: { catalog: CatalogItem[] }) {
-  const router = useRouter();
-  const sp = useSearchParams();
+// The share payload lives in the query string, which only exists in the
+// browser. useSyncExternalStore hands back the server snapshot during
+// hydration and the real one immediately after, so the hydrated HTML
+// still matches the prerender and the seeding below happens on the very
+// next render. `undefined` means "the client URL has not been read yet";
+// `null` means "read it, there is nothing to restore".
+let lastRoutineSearch: string | null = null;
+let lastRoutineState: ReturnType<typeof decodeState> = null;
 
+function routineStateFromUrl(): ReturnType<typeof decodeState> {
+  const search = window.location.search;
+  if (search !== lastRoutineSearch) {
+    lastRoutineSearch = search;
+    lastRoutineState = decodeState(new URLSearchParams(search).get("r"));
+  }
+  return lastRoutineState;
+}
+
+function useRoutineStateFromUrl() {
+  return useClientValue<ReturnType<typeof decodeState> | undefined>(
+    routineStateFromUrl,
+    undefined,
+  );
+}
+
+export function RoutineBuilder({ catalog }: { catalog: CatalogItem[] }) {
   const [entries, setEntries] = useState<RoutineEntry[]>([]);
   const [goals, setGoals] = useState<Goal[]>(["hydration"]);
   const [time, setTime] = useState<Time>("morning");
-  const [hydrated, setHydrated] = useState(false);
   const [shareToast, setShareToast] = useState(false);
 
-  // Hydrate from URL on mount.
-  useEffect(() => {
-    const parsed = decodeState(sp.get("r"));
-    if (parsed) {
-      setEntries(parsed.entries);
-      setGoals(parsed.goals);
-      setTime(parsed.time);
-    }
+  // Seeded during render, not from an effect, so the URL-writeback effect
+  // below cannot fire with an empty routine and blank the share link.
+  const fromUrl = useRoutineStateFromUrl();
+  const [hydrated, setHydrated] = useState(false);
+  if (!hydrated && fromUrl !== undefined) {
     setHydrated(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (fromUrl) {
+      setEntries(fromUrl.entries);
+      setGoals(fromUrl.goals);
+      setTime(fromUrl.time);
+    }
+  }
 
   // Persist to URL whenever state changes (after hydration).
   useEffect(() => {

@@ -27,7 +27,7 @@ function normalizeForSchemeCheck(raw: string): string {
   // Strip characters browsers ignore inside a scheme token (space, TAB,
   // LF, CR, NUL and other C0/C1 controls + DEL) so they can't be used to
   // obfuscate the scheme, then lowercase for the comparison.
-  // eslint-disable-next-line no-control-regex
+
   return raw.replace(/[\u0000-\u0020\u007f-\u009f]/g, "").toLowerCase();
 }
 

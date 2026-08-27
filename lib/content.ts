@@ -94,6 +94,10 @@ type Rankable = {
   datePublished: string;
 };
 
+export function rankingScoreOf(r: Rankable): number {
+  return getRankingScore(r);
+}
+
 function getRankingScore(r: Rankable): number {
   let score = 0;
   if (r.verdict && VERDICT_SCORE[r.verdict] !== undefined) {
@@ -124,7 +128,7 @@ function sortByScore<T extends Rankable>(list: T[]): T[] {
  * shows up here, even if its canonical folder is a different section.
  * (Detail-page URL stays at the canonical kind, no duplicate routes.)
  */
-export function getReviews(kind: Kind): ReviewSummary[] {
+function sectionReviews(kind: Kind): Review[] {
   const native = readReviews(kind);
   const guest: Review[] = [];
   for (const k of KINDS) {
@@ -133,9 +137,20 @@ export function getReviews(kind: Kind): ReviewSummary[] {
       if (r.crossList?.includes(kind)) guest.push(r);
     }
   }
-  return sortByScore([...native, ...guest])
-    .filter((r) => !r.hidden && !r.retired)
-    .map(({ body: _body, ...rest }) => rest);
+  return [...native, ...guest];
+}
+
+/** Section membership minus anything the reader should not see. Ordering
+ *  is the caller's choice: the listing wants ranking, adjacency wants
+ *  chronology, and both need the same set of reviews underneath. */
+function publicSection(kind: Kind): Review[] {
+  return sectionReviews(kind).filter((r) => !r.hidden && !r.retired);
+}
+
+export function getReviews(kind: Kind): ReviewSummary[] {
+  return sortByScore(publicSection(kind)).map(
+    ({ body: _body, ...rest }) => rest,
+  );
 }
 
 export function getRetiredReviews(): ReviewSummary[] {
@@ -174,7 +189,12 @@ export function getAllReviewsWithBody(): Review[] {
 }
 
 export function getAllReviewsIncludingHidden(kind: Kind): ReviewSummary[] {
-  return sortByDateDesc(readReviews(kind)).map(
+  // Same membership as the public listing, cross-listed guests included,
+  // just without the hidden/retired filter. Reading only `readReviews`
+  // here meant a review cross-listed into this section was absent from
+  // the admin view of it, so the admin list was not a superset of the
+  // public one and the author could not act on it from that screen.
+  return sortByDateDesc(sectionReviews(kind)).map(
     ({ body: _body, ...rest }) => rest,
   );
 }
@@ -228,9 +248,11 @@ export function getPrimersForProduct(productSlug: string): PrimerSummary[] {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Prev/next navigation helpers. All lists are sorted newest-first by
-// datePublished already (sortByDateDesc), so "prev" means older and
-// "next" means newer within a content type.
+// Prev/next navigation helpers. PrevNext labels the two links "Older" and
+// "Newer", so the list they index into has to be in date order. Reviews
+// are fed from a date sort rather than from getReviews(), which orders by
+// ranking score: taking neighbours out of the ranked list put an
+// arbitrary review behind a link that claims to be the older one.
 // ────────────────────────────────────────────────────────────────────────────
 
 type Adjacent<T> = { prev: T | null; next: T | null };
@@ -254,7 +276,10 @@ export function getAdjacentReviews(
   kind: Kind,
   slug: string,
 ): Adjacent<ReviewSummary> {
-  return findAdjacent(getReviews(kind), slug);
+  return findAdjacent(
+    sortByDateDesc(publicSection(kind)).map(({ body: _body, ...rest }) => rest),
+    slug,
+  );
 }
 
 export function getAdjacentPrimers(slug: string): Adjacent<PrimerSummary> {

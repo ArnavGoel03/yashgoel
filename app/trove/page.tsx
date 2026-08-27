@@ -75,7 +75,7 @@ export default function TrovePage() {
       </div>
 
       <p className="mt-6 max-w-2xl text-[17px] leading-[1.55] text-stone-700 dark:text-stone-300">
-        Trove is the native macOS productivity app I'm building right now —
+        Trove is the native macOS productivity app I&apos;m building right now —
         thirty-something panes for clipboard, capture, compute, files,
         system, and storage, all in one ~5 MB Swift binary. Local-only, no
         telemetry, no accounts. It replaces Raycast Pro + iStat Menus +
@@ -105,7 +105,7 @@ export default function TrovePage() {
 
       <section className="mt-12">
         <div className="text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">
-          What's in it
+          What&apos;s in it
         </div>
         <div className="mt-5 grid gap-x-10 gap-y-7 sm:grid-cols-2">
           {FEATURES.map((f) => (
@@ -124,7 +124,7 @@ export default function TrovePage() {
       <section className="mt-14">
         <div className="flex items-baseline gap-2 text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">
           <span className="text-rose-400">❋</span>
-          <span>What's not done yet</span>
+          <span>What&apos;s not done yet</span>
         </div>
         <div className="mt-5 space-y-5">
           {TODO.map((t) => (

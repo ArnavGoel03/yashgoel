@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { Container } from "@/components/container";
 import { PhotoHero, PhotoSideCaption, PhotoTile } from "@/components/photo-tile";
 import { photos } from "@/lib/photos";
@@ -11,7 +10,7 @@ import { ChapterNav } from "./chapter-nav";
 import { ContactSheet } from "./contact-sheet";
 import { ImageProtection } from "./protect";
 
-// Edge runtime attempt reverted — something in the /photos dependency
+// Edge runtime attempt reverted , something in the /photos dependency
 // chain still imports node:fs (probably @/lib/site or a transitive
 // dependency). Build failed with "Native module not found: node:fs".
 // Re-enable once we trace + remove the fs reference.
@@ -221,7 +220,7 @@ export default function PhotosPage() {
         crossOrigin=""
       />
 
-      {/* Hero preload — fires the browser fetch for the hero's optimized
+      {/* Hero preload , fires the browser fetch for the hero's optimized
           AVIF/WebP before the parser even reaches the <Image>. Combined
           with the inline AVIF (which paints from the HTML itself with
           zero network), the hero is visible faster than physically
@@ -236,7 +235,7 @@ export default function PhotosPage() {
         />
       )}
 
-      {/* Masthead — quiet eyebrow, dramatic title, italic subtitle,
+      {/* Masthead , quiet eyebrow, dramatic title, italic subtitle,
           one hairline rule, a single tight stat line. Press "/" to
           jump to any frame. */}
       <Container className="max-w-5xl">
@@ -315,7 +314,7 @@ export default function PhotosPage() {
             id={`chapter-${section.key}`}
             className="scroll-mt-24"
           >
-            {/* Chapter cover spread — book-style title page. Anchor
+            {/* Chapter cover spread , book-style title page. Anchor
                 photo bleeds the whole frame at low opacity, chapter
                 number / place / month set in editorial type on top.
                 Background routes through Next/Image at a small width
@@ -478,7 +477,7 @@ export default function PhotosPage() {
               })}
             </div>
 
-            {/* Chapter closer — quiet typographic stamp */}
+            {/* Chapter closer , quiet typographic stamp */}
             <div
               aria-hidden
               className="mx-auto mt-28 flex max-w-5xl flex-col items-center gap-4 px-6 text-center sm:mt-36"
@@ -499,7 +498,7 @@ export default function PhotosPage() {
         );
       })}
 
-      {/* Contact sheet — archive frames in a dense grid. Bulk-imported
+      {/* Contact sheet , archive frames in a dense grid. Bulk-imported
           unedited camera JPGs that didn't earn an editorial slot but
           stay browsable. Square crops keep the grid even; the rich
           chapter layout above stays the focus. */}
