@@ -1,10 +1,10 @@
 # Yashgoel · State
 
-Personal website at https://yashgoel.vercel.app — Next.js 16 App Router on Vercel.
+Personal website at https://yashgoel.vercel.app - Next.js 16 App Router on Vercel.
 
 ---
 
-## ⚡ Quickstart — read this first, skip the run-through
+## ⚡ Quickstart - read this first, skip the run-through
 
 A new session can get productive in ~60 seconds without re-deriving the
 architecture:
@@ -12,13 +12,13 @@ architecture:
 1. **Run the gate:** `pnpm test`. It validates every content file +
    cross-reference against the schema in seconds. If it's green, the
    data layer is healthy; if it's red, the failure message names the
-   exact file/field — fix that, don't go spelunking.
+   exact file/field - fix that, don't go spelunking.
 2. **Content is the product.** Reviews/primers are strict-schema MDX in
    `content/<kind>/*.mdx` and `content/primers/*.mdx`. Bad frontmatter
    fails the test (and the build). See "Data model" below.
 3. **Public pages are static (PPR).** `cacheComponents: true`. No DB on
    the read path, no middleware on public routes. The site is
-   CDN-fronted and spike-tolerant — see "Scalability" below.
+   CDN-fronted and spike-tolerant - see "Scalability" below.
 4. **Don't trust old session notes over the code.** This file's history
    section is a log, not current truth. The "Current architecture"
    block below is verified against the tree as of 2026-05-30.
@@ -29,10 +29,10 @@ architecture:
   `force-dynamic` on any public route; `app/layout.tsx` reads no dynamic
   APIs (no `cookies()`/`headers()`/`auth()`), so the shell prerenders.
   Content is read from the filesystem at build/prerender time and frozen
-  into the static output — runtime never touches `fs` or a DB on a
+  into the static output - runtime never touches `fs` or a DB on a
   public GET.
 - **CSP:** single **static** CSP header in `next.config.ts` (the
-  per-request-nonce experiment is fully gone — it was incompatible with
+  per-request-nonce experiment is fully gone - it was incompatible with
   cacheComponents prerender). All security headers are static there too.
 - **Admin auth is real:** `proxy.ts` (Edge middleware, `/admin/:path*`
   matcher only) gates `/admin` with a device-bound HMAC cookie
@@ -43,7 +43,7 @@ architecture:
   (`lib/content.ts`). Author-owned JSON: `content/photos.json`,
   `content/_library.json`, `content/_listening.json` (cron-written).
 - **Images:** Next/Image with a locked remote allowlist (Vercel Blob,
-  Cloudflare R2 `*.r2.dev`, and our own GitHub Release path only — the
+  Cloudflare R2 `*.r2.dev`, and our own GitHub Release path only - the
   pathname restriction stops the optimizer being abused as an open
   image proxy). Photos have migrated to R2.
 - **Writes/cron:** `/api/subscribe` + `/api/inbox` are POST endpoints
@@ -57,7 +57,7 @@ architecture:
 again and again" class of bugs **before** a slow `next build` or a bad
 deploy. Run it before every push.
 
-- `tests/data-integrity.test.ts` — the whole-catalog gate. It
+- `tests/data-integrity.test.ts` - the whole-catalog gate. It
   schema-validates **all seven** review kinds + primers (not just the
   three `content.test.ts` smoke-tests), and checks every
   cross-reference: slug uniqueness, `crossList` targets, primer
@@ -66,7 +66,7 @@ deploy. Run it before every push.
   formats, and that `photos.json` / `_library.json` parse to shape. A
   failure names the exact file + field.
 - `lib/content.test.ts`, `lib/retailers.test.ts`, `lib/affiliate.test.ts`
-  — unit/smoke tests for the loaders and link logic.
+  - unit/smoke tests for the loaders and link logic.
 
 **Invariant the test enforces (and the rule behind it):** every buy-link
 host must be explicitly mapped in `lib/retailers.ts` (`RETAILER_BY_HOST`
@@ -74,6 +74,53 @@ host must be explicitly mapped in `lib/retailers.ts` (`RETAILER_BY_HOST`
 in an MDX file, or the test fails. This stopped `a.co` rendering as "A",
 `direct.playstation.com` as "Direct", and Apple/WHOOP/Nike/Anker links
 falling through with no region or affiliate coverage.
+
+### Layout gate: `pnpm check:overflow` (added 2026-08-27)
+
+Vitest cannot see layout, so it never noticed that every section page let
+a phone scroll sideways. `scripts/check-overflow.mjs` drives headless
+Chrome over CDP against a running server and fails on any route whose
+document is wider than its viewport. Defaults to 22 routes x 6 widths
+(320 to 1440). It needs `next build && next start` plus a
+chrome-headless-shell on port 9333; the file header has the two commands.
+Run it after any change to a layout wrapper, a sticky/fixed element, a
+responsive breakpoint, or a decorative absolutely-positioned element.
+
+The probe ignores anything already inside a clipping ancestor, so a
+filter rail or a wide table in its own `overflow-x-auto` scroller reads
+as healthy. Only elements that actually widen the document are reported.
+
+Three separate causes were live on production until 2026-08-27, all
+fixed in the same commit:
+
+1. `components/section-masthead.tsx` hung a 28rem decorative wash 8rem
+   past the container with `-right-32`, so all eight section pages ran
+   498px of document in a 390px viewport. Now `right-0`: `blur-3xl`
+   paints outside the box without contributing to `scrollWidth`, so the
+   bleed survives and the scrollbar does not. Clipping the parent instead
+   was tried and rejected, it cut the wash 20px in from the screen and
+   left a visible vertical seam.
+2. `components/header.tsx` unhid the primary nav at `lg` (1024px) when
+   the row needs about 1220px, so every page overflowed to 1193px between
+   1024 and roughly 1220. The switch is now `xl` (1280px); below that the
+   hamburger stays, and it already contains every nav item.
+3. `app/photos/chapter-nav.tsx` carried `-mx-6 px-6`, the bleed pattern
+   for a padded parent, but it is rendered outside `<Container>`, so
+   there was no padding to cancel and it simply ran 24px past both edges.
+
+The class to watch for: a negative horizontal offset or margin is only
+safe when something above it clips, and on this site that means a
+full-bleed section carrying `overflow-hidden` (the homepage hero does
+this correctly at `app/page.tsx:133`).
+
+### Known-red at HEAD (not caused by the layout work)
+
+`pnpm test` reports 8 failures out of 124, identical on a clean checkout
+of `edb2c87`: `uvFilters` name resolution, changelog/lastUpdated ISO
+dates, per-kind review sort order, the hidden-review filters, and one
+habits import case. These are content-layer, not layout. They were
+verified pre-existing with a detached worktree before the layout commit
+landed. Fixing them is open work.
 
 ## Scalability posture (1k/day baseline → 1M spike-ready)
 
@@ -94,7 +141,7 @@ reaches origin compute:
 campaign that could push toward 1M/day: be on **Pro** (Hobby's
 bandwidth + image-optimization + function quotas would throttle first),
 confirm all photos serve from **R2** (Blob Hobby ~1GB cap is already
-exceeded — see CLAUDE.md split-tier notes), and keep the write-endpoint
+exceeded - see CLAUDE.md split-tier notes), and keep the write-endpoint
 rate limits wired (Upstash env vars set in prod). 1000/day is trivially
 within even Hobby limits.
 
@@ -139,7 +186,7 @@ Single-author portfolio and review site. Ship fast, no feature flags, iterate by
 - "On the shelf right now" preview only shows reviews with at least one photo
 - Implementation: filter on `collectCardPhotos(r).length > 0` in `app/page.tsx`
 
-## Session 2026-05-18 — Production outage + rollback
+## Session 2026-05-18 - Production outage + rollback
 
 ### Outage cause
 Commits `169334b` (CSP nonce middleware + Upstash rate limit) and `cffca3e`
@@ -154,19 +201,19 @@ Two compounded bugs:
    page hung forever on the `app/loading.tsx` skeleton.
 
 ### Shipped this session
-- **`c583f3c` (pushed to origin/main)** — Added missing import of
+- **`c583f3c` (pushed to origin/main)** - Added missing import of
   `themeInitScriptCspSource`; switched the hash to a precomputed literal
   in `lib/theme-script.ts` (Edge middleware can't pull `node:crypto`);
   removed `headers()` from `app/layout.tsx` so the shell prerenders;
   consolidated `themeInitScript` to `lib/theme-script.ts`.
 
 ### In progress (local edits, NOT yet committed/pushed)
-> **RESOLVED — shipped since.** As of 2026-05-30 all of the below is live
+> **RESOLVED - shipped since.** As of 2026-05-30 all of the below is live
 > in `next.config.ts` / `proxy.ts` (static CSP, `/admin`-only matcher,
 > trimmed RouteWarmer) and `cacheComponents` is back ON. See the
 > "Current architecture" block at the top for verified current state.
 
-- `proxy.ts` reduced to `/admin/:path*` matcher only — no middleware on
+- `proxy.ts` reduced to `/admin/:path*` matcher only - no middleware on
   public routes, no JWT decode on the home page.
 - `next.config.ts` ships a single **static CSP** header (`'unsafe-inline'`
   + `'unsafe-eval'` + host allowlist for Vercel Analytics, SpeedInsights,
@@ -194,6 +241,6 @@ Two compounded bugs:
 
 ## Key file pointers
 
-- `components/route-warmer.tsx` — bulk prefetch + Speculation Rules
+- `components/route-warmer.tsx` - bulk prefetch + Speculation Rules
 - `components/cursor-halo.tsx`, `components/audio-cues.tsx`, `components/reading-progress.tsx`, `components/time-greeting.tsx`, `components/nav-link.tsx`, `lib/haptic-click.ts`
 - `app/loading.tsx` + 12 per-route `loading.tsx` files

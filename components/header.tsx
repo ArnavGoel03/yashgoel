@@ -165,8 +165,8 @@ export function Header() {
               width and stops the greeting from wrapping behind the Y. */}
         </div>
 
-        <div className="flex items-center gap-2 lg:gap-4">
-          <nav className="hidden items-center text-[11px] uppercase tracking-[0.16em] text-stone-500 lg:flex dark:text-stone-400">
+        <div className="flex items-center gap-2 xl:gap-4">
+          <nav className="hidden items-center text-[11px] uppercase tracking-[0.16em] text-stone-500 xl:flex dark:text-stone-400">
             {primaryItems.map((item, i) => {
               const active =
                 pathname === item.href ||
@@ -317,7 +317,7 @@ export function Header() {
             onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100 lg:hidden"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100 xl:hidden"
           >
             {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
@@ -326,7 +326,7 @@ export function Header() {
 
       {menuOpen && (
         <div
-          className="fixed inset-x-0 top-16 z-40 origin-top animate-[menu-slide_180ms_cubic-bezier(0.22,1,0.36,1)] border-b border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-950 lg:hidden"
+          className="fixed inset-x-0 top-16 z-40 origin-top animate-[menu-slide_180ms_cubic-bezier(0.22,1,0.36,1)] border-b border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-950 xl:hidden"
           style={{ maxHeight: "calc(100dvh - 4rem)", overflowY: "auto" }}
         >
           <Container>

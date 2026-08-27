@@ -22,7 +22,7 @@ function computeStats(reviews: ReviewSummary[]) {
   };
 }
 
-// Evaluated at module load (build/deploy time) — keeps Next 16
+// Evaluated at module load (build/deploy time) - keeps Next 16
 // cacheComponents prerender happy and updates each deploy.
 const ISSUE_DATE = new Date().toLocaleDateString("en-US", {
   month: "long",
@@ -126,10 +126,23 @@ export function SectionMasthead({
       {/* Section-level rose wash, mirrors the homepage hero so the
           editorial identity carries through to /skincare, /supplements,
           /oral-care, /hair-care without introducing any new accent
-          colour. Light mode runs warmer, dark mode keeps it whisper. */}
+          colour. Light mode runs warmer, dark mode keeps it whisper.
+
+          The right edge is pinned to the container, not hung past it.
+          This used to be `-right-32`, which put 8rem of a 28rem box
+          outside the viewport and widened the document: 498px of page
+          in a 390px viewport, on all eight section pages, at every
+          width below ~1440, which is why a phone could scroll sideways.
+          Clipping the parent instead would cut the wash at the
+          container edge and leave a hard vertical seam 20px in from the
+          screen. `blur-3xl` paints well outside the box without
+          contributing to scrollWidth, so pinning the box and letting
+          the blur spill keeps the bleed and loses the scrollbar. The
+          homepage hero can still use a negative offset because its
+          section is full-bleed and carries `overflow-hidden`. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-32 -top-20 -z-10 h-[28rem] w-[28rem] rounded-full bg-rose-200/45 blur-3xl dark:bg-rose-900/20"
+        className="pointer-events-none absolute right-0 -top-20 -z-10 h-[28rem] w-[28rem] rounded-full bg-rose-200/45 blur-3xl dark:bg-rose-900/20"
       />
       <TopRule left={volume} right={issueDate()} />
 

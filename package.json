@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build:hero": "node scripts/build-hero-avif.mjs",
-    "analyze": "ANALYZE=true next build"
+    "analyze": "ANALYZE=true next build",
+    "check:overflow": "node scripts/check-overflow.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

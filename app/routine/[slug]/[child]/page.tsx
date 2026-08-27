@@ -11,23 +11,23 @@ import {
 } from "@/lib/routines";
 import type { ReviewSummary } from "@/lib/types";
 
-type Props = { params: Promise<{ parent: string; child: string }> };
+type Props = { params: Promise<{ slug: string; child: string }> };
 
 export async function generateStaticParams() {
   return getSubroutinesList().map((s) => {
-    const [parent, child] = s.split("/");
-    return { parent, child };
+    const [slug, child] = s.split("/");
+    return { slug, child };
   });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { parent, child } = await params;
-  const def = getSubroutine(`${parent}/${child}`);
+  const { slug, child } = await params;
+  const def = getSubroutine(`${slug}/${child}`);
   if (!def) return {};
   return {
     title: `${def.label} routine`,
     description: def.description,
-    alternates: { canonical: `/routine/${parent}/${child}` },
+    alternates: { canonical: `/routine/${slug}/${child}` },
   };
 }
 
@@ -54,11 +54,11 @@ const SKINCARE_ORDER: Record<string, number> = {
 };
 
 export default async function SubroutinePage({ params }: Props) {
-  const { parent, child } = await params;
-  const def = getSubroutine(`${parent}/${child}`);
+  const { slug, child } = await params;
+  const def = getSubroutine(`${slug}/${child}`);
   if (!def) notFound();
-  const slug = `${parent}/${child}` as SubroutineSlug;
-  const items = getReviewsInSubroutine(slug);
+  const subroutine = `${slug}/${child}` as SubroutineSlug;
+  const items = getReviewsInSubroutine(subroutine);
 
   const skincare = items
     .filter((r) => r.kind === "skincare")
@@ -77,11 +77,11 @@ export default async function SubroutinePage({ params }: Props) {
   return (
     <Container className="max-w-3xl py-12 sm:py-16">
       <Link
-        href={`/routine/${parent}`}
+        href={`/routine/${slug}`}
         className="inline-flex items-center gap-1.5 text-sm text-stone-500 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to {parent}
+        Back to {slug}
       </Link>
 
       <div className="mt-8 border-b border-stone-300 pb-10 dark:border-stone-800">
@@ -91,7 +91,7 @@ export default async function SubroutinePage({ params }: Props) {
             <span>Subroutine</span>
           </span>
           <span className="font-mono text-stone-400 dark:text-stone-500">
-            {parent} / {child}
+            {slug} / {child}
           </span>
         </div>
         <h1 className="font-serif text-4xl leading-[1.02] tracking-tight text-stone-900 sm:text-5xl dark:text-stone-100">

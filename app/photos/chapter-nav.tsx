@@ -47,7 +47,7 @@ export function ChapterNav({ chapters }: { chapters: Chapter[] }) {
   return (
     <nav
       aria-label="Chapter navigation"
-      className="sticky top-0 z-40 -mx-6 border-b border-stone-200/60 bg-white/75 px-6 backdrop-blur-md dark:border-stone-800/60 dark:bg-stone-950/75"
+      className="sticky top-0 z-40 border-b border-stone-200/60 bg-white/75 px-6 backdrop-blur-md dark:border-stone-800/60 dark:bg-stone-950/75"
     >
       <ul className="mx-auto flex max-w-5xl items-baseline justify-center gap-8 overflow-x-auto py-4 sm:gap-12 sm:py-5">
         {chapters.map((c) => {
