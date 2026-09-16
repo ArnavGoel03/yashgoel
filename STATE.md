@@ -344,3 +344,18 @@ Two compounded bugs:
 - `components/route-warmer.tsx` - bulk prefetch + Speculation Rules
 - `components/cursor-halo.tsx`, `components/audio-cues.tsx`, `components/reading-progress.tsx`, `components/time-greeting.tsx`, `components/nav-link.tsx`, `lib/haptic-click.ts`
 - `app/loading.tsx` + 12 per-route `loading.tsx` files
+
+## Responsive homepage photograph, 2026-09-17
+
+The homepage cover now uses the existing allowlisted Next/Image optimizer with
+container-aware sizes. Lazy loading, reserved aspect ratio, caption, alt text,
+link and original collection source are retained. The optimizer returned valid
+WebP at 750px (11,860 bytes) and 1080px (21,332 bytes), versus the audited
+2,746,090-byte original. The 1080px output was visually inspected. Generated
+production HTML contains responsive srcset/sizes instead of the raw original.
+
+Validation: 142 content tests, targeted ESLint and production build pass. Browser
+currentSrc/layout checks remain unavailable in this session; no browser speedup
+or Core Web Vitals score is claimed. Local test tooling emits an existing Node
+26 module.register deprecation. Shipping receipt is tracked in the portfolio's
+`docs/audits/performance-2026-09-17/IMPLEMENTATION.md`.
