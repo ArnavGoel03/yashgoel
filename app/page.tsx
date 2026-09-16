@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/container";
 import { SocialIconLink } from "@/components/social-link";
@@ -292,10 +293,11 @@ export default function HomePage() {
                     maxHeight: "75vh",
                   }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={pageHero.src}
                     alt={pageHero.alt}
+                    fill
+                    sizes="(min-width: 1152px) 710px, (min-width: 1024px) calc(66.667vw - 59px), (min-width: 640px) calc(100vw - 64px), calc(100vw - 40px)"
                     loading="lazy"
                     draggable={false}
                     className="h-full w-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.012]"
