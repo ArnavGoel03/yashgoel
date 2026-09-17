@@ -1,3 +1,17 @@
+# Current production restoration, 2026-09-18
+
+Production is available again: canonical homepage HTTP200, project paused:false,
+and existing READY deployment dpl_6Cnvr2MigsyFg6ZGqFwATSxSEK2c still serves
+5d38b79ce20c87ad9ba773309a38b6856c482740. Responsive image markup is present.
+The supported unpause operation changed no plan, billing limit or deployed source.
+
+Concurrent work merged PR5 as a1100652cf2c6f8e3023cd66fe75eccac43419c7.
+Its application tree matches tested 9840f89c9ef460cd953f07afbadb214a44327253;
+the exact Git diff contains only this STATE document. Hosted run35273828251
+passed source gates and desktop/phone browser acceptance. That newer verified
+candidate is merged but not live. No new deployment or merge was requested by
+this restoration pass. Previous pause descriptions below are historical.
+
 # Hosted stack verification follow-up, 2026-09-18
 
 CI run https://github.com/ArnavGoel03/yashgoel/actions/runs/35271801736
