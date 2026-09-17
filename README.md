@@ -378,3 +378,9 @@ lib/
 ## License
 
 Code is for my own personal site. Reviews and photos are © Yash Goel. Open an issue if you'd like to discuss reuse.
+
+## Compiler verification
+
+`pnpm run typecheck` generates Next route types and runs native TypeScript 7.
+The `typescript` dependency is the real TypeScript 6 compatibility API used by
+Next and lint tooling. Current verification and release limits: `docs/STATE.md`.

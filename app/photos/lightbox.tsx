@@ -23,6 +23,13 @@ function optimized(src: string, w = 2400, q = 88): string {
   return `/_next/image?url=${encodeURIComponent(src)}&w=${w}&q=${q}`;
 }
 
+function lightboxTrigger(target: EventTarget | null): HTMLElement | null {
+  return target instanceof Element
+    ? target.closest<HTMLElement>("[data-lightbox-index]")
+    : null;
+}
+
+
 /**
  * Click-to-open lightbox for /photos.
  *
@@ -95,11 +102,7 @@ export function LightboxRoot({ photos }: { photos: LightboxPhoto[] }) {
   const preloaded = useRef<Set<number>>(new Set());
   useEffect(() => {
     const click = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      const el = target.closest(
-        "[data-lightbox-index]",
-      ) as HTMLElement | null;
+      const el = lightboxTrigger(e.target);
       if (!el) return;
       if (el.closest("[data-lightbox-overlay]")) return;
       const idx = Number(el.dataset.lightboxIndex);
@@ -119,11 +122,7 @@ export function LightboxRoot({ photos }: { photos: LightboxPhoto[] }) {
       document.head.appendChild(link);
     }
     const enter = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      const el = target.closest(
-        "[data-lightbox-index]",
-      ) as HTMLElement | null;
+      const el = lightboxTrigger(e.target);
       if (!el) return;
       const idx = Number(el.dataset.lightboxIndex);
       if (!Number.isFinite(idx) || idx < 0 || idx >= photos.length)
