@@ -24,6 +24,13 @@ test("public pages, navigation and photo lightbox remain usable", async ({ page 
   await page.getByRole("button", { name: "Next photo", exact: true }).click();
   await expect(photo).not.toHaveAttribute("src", first);
   await expect.poll(() => photo.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+  await photo.evaluate(img => img.decode());
+  await page.evaluate(async () => {
+    await Promise.all(document.getAnimations().filter(animation =>
+      animation.effect?.getTiming().iterations !== Infinity,
+    ).map(animation => animation.finished.catch(() => {})));
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
   await page.screenshot({ path: info.outputPath(`${info.project.name}-lightbox.png`) });
   await page.keyboard.press("Escape");
   await expect(overlay).toHaveCount(0);
