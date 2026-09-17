@@ -1,0 +1,762 @@
+{
+  "checkedAt": "2026-09-17T23:26:44.821866+00:00",
+  "deployment": "dpl_7crMNHAok1dLV8dd8eD9fahdX2v9",
+  "source": "a1100652cf2c6f8e3023cd66fe75eccac43419c7",
+  "alias": "yashgoel.vercel.app",
+  "routes": [
+    {
+      "path": "/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": true,
+      "hsts": true
+    },
+    {
+      "path": "/photos",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": true,
+      "hsts": true
+    },
+    {
+      "path": "/skincare",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": true,
+      "hsts": true
+    },
+    {
+      "path": "/photos/opengraph-image",
+      "status": 200,
+      "contentType": "image/png",
+      "csp": true,
+      "hsts": true
+    }
+  ],
+  "assetChecks": [
+    {
+      "path": "/_next/static/immutable/chunks/2ana1phx0iiiv.css",
+      "status": 200,
+      "contentType": "text/css; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/0ix2hwyaj4ph9.css",
+      "status": 200,
+      "contentType": "text/css; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/377sc6y8rwiwf.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/0kccnq-_e4sh_.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/1ulutx05rlzhh.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/3w9tepghyp6um.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/3khut_3n73py8.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/turbopack-00w3ofl7w5nvi.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/2fd_4d3ub0ocq.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/0ivtspkphsrjx.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/3by0r_zvm5w_1.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/07kwem133lvjy.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/2bef39en9zqeq.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/2rc6-57gqdw14.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/0c0hxoamwjsbw.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/0s_ip7tqk8m5c.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    },
+    {
+      "path": "/_next/static/immutable/chunks/2asmg03em9fa6.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cache": "public,max-age=31536000,immutable"
+    }
+  ],
+  "initialImageChecks": [
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-sunset-lone-silhouette-v3.jpg&w=3840&q=75",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-sunset-lone-silhouette-v3.jpg&w=3840&q=92",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_liquidambar-leaves-day-v3.jpg&w=1920&q=65",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_liquidambar-leaves-day-v3.jpg&w=3840&q=92",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_yellow-leaf-on-asphalt-crack-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_purple-heart-flowering-shoot-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_gingko-branch-on-pool-a-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_purple-heart-flowers-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_bird-of-paradise-stucco-wall-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_flutist-sculpture-italianate-building-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_still-life-conch-shells-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_patio-grills-bw-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_bromeliad-garden-v2-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_red-ginger-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_pink-leaf-concrete-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_liquidambar-with-seedballs-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_leaves-and-tower-v2-v3.jpg&w=3840&q=90",
+      "status": 400,
+      "contentType": "text/plain; charset=utf-8",
+      "cache": "public, max-age=0, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_bromeliad-against-pastel-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_red-bromeliad-v2-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_plants-in-shadow-bw-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_purple-heart-new-growth-v2-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_liquidambar-against-tower-v2-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_leaves-on-mulch-v2-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_bistro-on-the-patio-v2-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_ripples-on-the-pool-v2-v4.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_shell-and-orb-v2-v4.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_ucsd-autumn-leaves-dusk-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_ucsd-muir-apartments-tree-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_ucsd-bougainvillea-apartments-dusk-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_backlit-orange-canopy-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_streetlight-leaf-night-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_downtown-grocery-outlet-night-v3.jpg&w=3840&q=92",
+      "status": 400,
+      "contentType": "text/plain; charset=utf-8",
+      "cache": "public, max-age=0, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_downtown-hotel-st-james-palms-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_downtown-hotel-st-james-uplit-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_downtown-facade-red-green-lights-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_downtown-flags-night-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_downtown-modernist-building-night-v3.jpg&w=3840&q=92",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_eucalyptus-at-golden-hour-v2-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_red-against-columns-v2-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_ucsd-ucsd-ucsd-v2-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_solo-on-the-court-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_san-diego-after-dark-v2-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_lit-up-for-the-season-v2-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_headlights-in-the-city-v2-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_hotel-in-green-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-10-18_king-triton-v3.jpg&w=3840&q=90",
+      "status": 400,
+      "contentType": "text/plain; charset=utf-8",
+      "cache": "public, max-age=0, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-10-18_anger-faith-envy-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-10-18_blue-at-night-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-10-18_lone-car-lamplit-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-10-12_on-the-grass-v3.jpg&w=3840&q=92",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-10-12_arms-up-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-10-08_by-the-window-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-10-08_light-through-the-door-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-sunset-walkers-silhouettes-v3.jpg&w=1920&q=65",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-sunset-walkers-silhouettes-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-sound-stage-golden-hour-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-sunset-ridge-blur-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-photographer-silhouette-dusk-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-sound-stage-pink-sunset-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-sound-stage-mountains-dusk-v3.jpg&w=3840&q=92",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-couple-sunset-pose-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-couple-jump-pose-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-three-women-sunset-hug-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-blue-bmw-on-lakebed-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_vast-range-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_sun-on-the-horizon-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_arms-open-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_the-witness-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_friends-at-sunset-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_stage-at-dusk-v3.jpg&w=3840&q=90",
+      "status": "timeout",
+      "error": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_downtown-horton-fountain-a-v3.jpg&w=3840&q=70",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "cache": "public, max-age=14400, must-revalidate"
+    }
+  ],
+  "invalidation": {
+    "status": 200,
+    "body": "",
+    "sources": [
+      "https://github.com/ArnavGoel03/yashgoel/releases/download/dslr-archive-v1/2023-12-07_liquidambar-leaves-day-v3.jpg",
+      "https://github.com/ArnavGoel03/yashgoel/releases/download/dslr-archive-v1/2023-12-07_leaves-and-tower-v2-v3.jpg",
+      "https://github.com/ArnavGoel03/yashgoel/releases/download/dslr-archive-v1/2023-12-06_downtown-grocery-outlet-night-v3.jpg",
+      "https://github.com/ArnavGoel03/yashgoel/releases/download/dslr-archive-v1/2022-10-18_king-triton-v3.jpg"
+    ]
+  },
+  "failedImageRechecks": [
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_liquidambar-leaves-day-v3.jpg&w=1920&q=65",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000b0b0b0b0c"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-sunset-lone-silhouette-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_liquidambar-leaves-day-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_yellow-leaf-on-asphalt-crack-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_purple-heart-flowering-shoot-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_purple-heart-flowers-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_bird-of-paradise-stucco-wall-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_bromeliad-garden-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_leaves-and-tower-v2-v3.jpg&w=3840&q=90",
+      "status": 400,
+      "error": "INVALID_IMAGE_OPTIMIZE_REQUEST",
+      "body": "Bad request\n\nINVALID_IMAGE_OPTIMIZE_REQUEST\n\nbom1::rvz55-1789687531099-ecbf9911afbe\n"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_red-bromeliad-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_purple-heart-new-growth-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_liquidambar-against-tower-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_bistro-on-the-patio-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_ucsd-autumn-leaves-dusk-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_downtown-grocery-outlet-night-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_downtown-facade-red-green-lights-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_downtown-modernist-building-night-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_eucalyptus-at-golden-hour-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_red-against-columns-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_ucsd-ucsd-ucsd-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_lit-up-for-the-season-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-06_headlights-in-the-city-v2-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-10-18_king-triton-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-10-12_on-the-grass-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-10-12_arms-up-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-sound-stage-pink-sunset-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-sound-stage-mountains-dusk-v3.jpg&w=3840&q=92",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-couple-jump-pose-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_playa-blue-bmw-on-lakebed-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_vast-range-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_friends-at-sunset-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    },
+    {
+      "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2022-11-04_stage-at-dusk-v3.jpg&w=3840&q=90",
+      "status": 200,
+      "type": "image/jpeg",
+      "signature": "ffd8ffdb0043000303030303"
+    }
+  ],
+  "finalRevalidatedImage": {
+    "path": "/_next/image?url=https%3A%2F%2Fgithub.com%2FArnavGoel03%2Fyashgoel%2Freleases%2Fdownload%2Fdslr-archive-v1%2F2023-12-07_leaves-and-tower-v2-v3.jpg&w=3840&q=90",
+    "status": 200,
+    "type": "image/jpeg"
+  },
+  "decodedRepairedExamples": [
+    {
+      "file": "2023-12-07_liquidambar-leaves-day-v3.jpg",
+      "width": 1920,
+      "height": 1281
+    },
+    {
+      "file": "2023-12-07_leaves-and-tower-v2-v3.jpg",
+      "width": 3840,
+      "height": 2562
+    }
+  ],
+  "verdict": "All 71 emitted image URLs, original failed 1920/q65 URL, four routes and 17 JS/CSS assets return HTTP200. Targeted invalidation repaired stale optimizer failures without source changes."
+}

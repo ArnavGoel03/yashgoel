@@ -2,16 +2,17 @@
 
 ## Current availability, 18 September 2026
 
-The public homepage returns HTTP 503 `DEPLOYMENT_PAUSED`. The responsive-photo
-release (PR3, merge `5d38b79`) was previously verified live; those optimizer and
-HTML receipts remain historical, not evidence of availability during this pause.
-Browser-selected currentSrc, actual rendered cover dimensions and desktop/phone
-layout/performance comparison remain unverified. Existing HTTP derivative sizes
-do not establish which candidate a browser selects. No browser or build gate
-was repeated for this record-only recheck. The repository is public (GitHub API).
-
-Full bounded follow-up: `docs/RELEASE-RECHECK-2026-09-18.md`; HTTP receipts:
-`docs/receipts/web-availability-2026-09-18.json`.
+The verified stack upgrade is live at https://yashgoel.vercel.app, READY
+`dpl_7crMNHAok1dLV8dd8eD9fahdX2v9`, source
+`a1100652cf2c6f8e3023cd66fe75eccac43419c7`. Four public routes, 17 JavaScript/CSS
+assets and all 71 emitted image URLs return HTTP200 after targeted source-image
+cache invalidation repaired stale optimizer failures. Two repaired complete
+JPEGs decoded and were visually inspected. No application source or image URLs
+changed. Full current receipt and limits: `docs/STATE.md` and
+`docs/receipts/live-stack-2026-09-18.json`. Earlier paused-host and responsive
+photo receipts are historical. Browser-selected live currentSrc and real-device
+performance comparisons remain unmeasured; source desktop/phone acceptance
+passed before deployment.
 
 Personal website at https://yashgoel.vercel.app - Next.js 16 App Router on Vercel.
 
