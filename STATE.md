@@ -1,6 +1,24 @@
 # Yashgoel · State
 
-## Current availability, 18 September 2026
+## Production restored, 18 September 2026
+
+The existing verified deployment was resumed using the supported project unpause
+operation. Independent provider readback confirms paused:false and READY at
+`dpl_6Cnvr2MigsyFg6ZGqFwATSxSEK2c`, source `5d38b79ce20c87ad9ba773309a38b6856c482740`.
+Canonical URL: https://yashgoel.vercel.app/
+
+The homepage returns 200 with its responsive srcset and Next image optimizer URL. All
+142 data-integrity tests pass on the restored source tree. Concurrent work merged the
+newer stack/browser candidate in PR5 as a110065 after the initial inventory. This
+restoration does not publish that newer source.
+
+Current main includes the newer PR5 source, separately from this restored artifact. No
+new build/deployment, Git merge, source change, billing setting or plan change was made.
+The existing Hobby plan and spending limits remain unchanged. Rendered/device acceptance
+gaps listed below remain open; HTTP/source checks do not replace them. The previous
+paused-availability section below is historical.
+
+## Historical pause, 18 September 2026
 
 The public homepage returns HTTP 503 `DEPLOYMENT_PAUSED`. The responsive-photo
 release (PR3, merge `5d38b79`) was previously verified live; those optimizer and
