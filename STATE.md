@@ -1,5 +1,18 @@
 # Yashgoel · State
 
+## Current availability, 18 September 2026
+
+The public homepage returns HTTP 503 `DEPLOYMENT_PAUSED`. The responsive-photo
+release (PR3, merge `5d38b79`) was previously verified live; those optimizer and
+HTML receipts remain historical, not evidence of availability during this pause.
+Browser-selected currentSrc, actual rendered cover dimensions and desktop/phone
+layout/performance comparison remain unverified. Existing HTTP derivative sizes
+do not establish which candidate a browser selects. No browser or build gate
+was repeated for this record-only recheck. The repository is public (GitHub API).
+
+Full bounded follow-up: `docs/RELEASE-RECHECK-2026-09-18.md`; HTTP receipts:
+`docs/receipts/web-availability-2026-09-18.json`.
+
 Personal website at https://yashgoel.vercel.app - Next.js 16 App Router on Vercel.
 
 ---
