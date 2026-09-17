@@ -1,0 +1,171 @@
+[
+  {
+    "project": "yashgoel",
+    "url": "https://yashgoel.vercel.app/",
+    "final_url": "https://yashgoel.vercel.app/",
+    "status": 503,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": true,
+    "deployment_not_found": false,
+    "sha256": "55073cd00a1f0bf6a0140de89dc4402a4e5ad4bf92e442dd6cca4efa38227839",
+    "verified_at": "2026-09-17T19:20:41.583368+00:00"
+  },
+  {
+    "project": "cutroom",
+    "url": "https://cutroom-one.vercel.app/",
+    "final_url": "https://cutroom-one.vercel.app/",
+    "status": 503,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": true,
+    "deployment_not_found": false,
+    "sha256": "86dd33123cbe54e6fd2c25ceb41989338af259c0adf45bed91e787003c4be155",
+    "verified_at": "2026-09-17T19:20:41.803107+00:00"
+  },
+  {
+    "project": "qbranch",
+    "url": "https://q-armoury.vercel.app/",
+    "final_url": "https://q-armoury.vercel.app/",
+    "status": 503,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": true,
+    "deployment_not_found": false,
+    "sha256": "80a72084e4b6586e450c4cc22584e2e5e625229cffd93658481cf229faf073a8",
+    "verified_at": "2026-09-17T19:20:41.589092+00:00"
+  },
+  {
+    "project": "library-walk",
+    "url": "https://library-walk.vercel.app/",
+    "final_url": "https://library-walk.vercel.app/",
+    "status": 503,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": true,
+    "deployment_not_found": false,
+    "sha256": "dc2ae5ed4862ab4a62a4a1149920f2ca6760bea985b312f6240acbb82f235d7d",
+    "verified_at": "2026-09-17T19:20:41.595074+00:00"
+  },
+  {
+    "project": "Gondilal",
+    "url": "https://gondilalsaraf.com/",
+    "final_url": "https://gondilalsaraf.com/",
+    "status": 503,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": true,
+    "deployment_not_found": false,
+    "sha256": "70dec7131fd3e3dcbafcf0b082dd591a0684c354b6d378adff7def17acc07d56",
+    "verified_at": "2026-09-17T19:20:41.791906+00:00"
+  },
+  {
+    "project": "Gondilal",
+    "url": "https://gondilalsaraf.com/shop",
+    "final_url": "https://gondilalsaraf.com/shop",
+    "status": 503,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": true,
+    "deployment_not_found": false,
+    "sha256": "d706e9403ff2d02ba82ee60e1a124ce51fa9cfb6111a7ea5b080015a08ebc5ce",
+    "verified_at": "2026-09-17T19:20:41.866603+00:00"
+  },
+  {
+    "project": "Buzz",
+    "url": "https://buzzcampus.vercel.app/",
+    "final_url": "https://buzzcampus.vercel.app/",
+    "status": 503,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": true,
+    "deployment_not_found": false,
+    "sha256": "1b3095cafb9f5277797817e88a6bd94f459668b4583b8d9af27dc8fe217a53b4",
+    "verified_at": "2026-09-17T19:20:41.640933+00:00"
+  },
+  {
+    "project": "power-grid-analysis",
+    "url": "https://arnavgoel03.github.io/Power-grid-analysis/",
+    "final_url": "https://arnavgoel03.github.io/Power-grid-analysis/",
+    "status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "deployment_paused": false,
+    "deployment_not_found": false,
+    "sha256": "c2b9e1812b71e0a2d5ae7156cd78dc4fb075f5672258522f43ec628572ce4c27",
+    "verified_at": "2026-09-17T19:20:41.942211+00:00"
+  },
+  {
+    "project": "collab",
+    "url": "https://collab.arnavgoel.dev/",
+    "final_url": "https://collab.arnavgoel.dev/",
+    "status": 503,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": true,
+    "deployment_not_found": false,
+    "sha256": "b7198fcc54bee8bf2605d601a3a49f8dfd3cca289f64041c9e80d7f1caf4a9ee",
+    "verified_at": "2026-09-17T19:20:41.938237+00:00"
+  },
+  {
+    "project": "collab",
+    "url": "https://collab.arnavgoel.dev/sign-in",
+    "final_url": "https://collab.arnavgoel.dev/sign-in",
+    "status": 503,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": true,
+    "deployment_not_found": false,
+    "sha256": "c8aacd941a999e16f77ed6a958008bc00c724b5b025c1dcb35795554b71b20e3",
+    "verified_at": "2026-09-17T19:20:41.938132+00:00"
+  },
+  {
+    "project": "watch-together",
+    "url": "https://watch.arnavgoel.dev/",
+    "final_url": "https://watch.arnavgoel.dev/",
+    "status": 503,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": true,
+    "deployment_not_found": false,
+    "sha256": "85f74a10bb6df4406c6e22bed8e8d9a450d3070db172fa05fbac384c6ff3f243",
+    "verified_at": "2026-09-17T19:20:42.296987+00:00"
+  },
+  {
+    "project": "stature",
+    "url": "https://lebel.vercel.app/",
+    "final_url": "https://lebel.vercel.app/",
+    "status": 503,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": true,
+    "deployment_not_found": false,
+    "sha256": "e8f3d64f38b41364d29e224ba1145f2962dafa4ee4b09af06b5058f9fe727fe8",
+    "verified_at": "2026-09-17T19:20:42.159773+00:00"
+  },
+  {
+    "project": "stature",
+    "url": "https://statureindia.vercel.app/",
+    "final_url": "https://statureindia.vercel.app/",
+    "status": 404,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": false,
+    "deployment_not_found": true,
+    "sha256": "c6a2c2bcacb193fc8424b515ecfccbae76a53d65b26cba2521a0e02809e7bbed",
+    "verified_at": "2026-09-17T19:20:42.147723+00:00"
+  },
+  {
+    "project": "seen",
+    "url": "https://seen-five-blue.vercel.app/",
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "verified_at": "2026-09-17T19:20:41.909509+00:00"
+  },
+  {
+    "project": "seen",
+    "url": "https://seen-five-blue.vercel.app/api/health",
+    "final_url": "https://seen-five-blue.vercel.app/api/health",
+    "status": 503,
+    "content_type": "text/plain; charset=utf-8",
+    "deployment_paused": true,
+    "deployment_not_found": false,
+    "sha256": "d75c2969baa43d585e3765898513c7e08f467cb72e1c5d000929ea893dabaf7d",
+    "verified_at": "2026-09-17T19:20:42.200106+00:00"
+  },
+  {
+    "project": "seen",
+    "url": "https://seen-five-blue.vercel.app/",
+    "status": 503,
+    "deployment_paused": true,
+    "sha256": "c980cb9d121e078d56e64e2831633ab1d549de5feace88cfba1dc49176b063ac",
+    "verified_at": "2026-09-17T19:23:39.420173+00:00",
+    "note": "Bounded retry after initial DNS failure"
+  }
+]
