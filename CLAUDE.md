@@ -372,3 +372,9 @@ Vercel Blob Hobby plan caps at ~1 GB; we crossed that mid-session. Two-tier stra
 The user keeps a memory file at `~/.claude/projects/-Users-arnavgoel-Documents-skincare-supplement-reviews/memory/`. Notable entries:
 - `amazon-associates-ids.md`, tracking IDs per marketplace
 - `MEMORY.md`, index of memory files
+
+## Compiler verification
+
+`pnpm run typecheck` generates Next route types and runs native TypeScript 7.
+The `typescript` dependency is the real TypeScript 6 compatibility API used by
+Next and lint tooling. Current verification and release limits: `docs/STATE.md`.

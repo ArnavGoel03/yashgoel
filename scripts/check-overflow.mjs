@@ -161,7 +161,8 @@ for (const route of ROUTES) {
       if (r.exceptionDetails) throw new Error(r.exceptionDetails.text);
       out = r.result.value;
     } catch (e) {
-      console.log(`SKIP  ${route} at ${width}: ${e.message}`);
+      console.log(`FAIL  ${route} at ${width}: ${e.message}`);
+      failures++;
       continue;
     }
     checked++;
@@ -171,6 +172,7 @@ for (const route of ROUTES) {
       out.bad.forEach((b) => console.log(`        ${b}`));
     }
   }
+  console.log(`Checked ${route} at ${WIDTHS.join(",")}px`);
 }
 
 await fetch(`http://127.0.0.1:${PORT}/json/close/${target.id}`).catch(() => {});
@@ -179,4 +181,4 @@ console.log(
     ? `No horizontal overflow. ${checked} route/width pairs checked.`
     : `${failures} of ${checked} route/width pairs scroll sideways.`,
 );
-process.exit(failures === 0 ? 0 : 1);
+process.exit(failures === 0 && checked === ROUTES.length * WIDTHS.length ? 0 : 1);

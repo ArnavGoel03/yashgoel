@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getPhotos } from "@/lib/photos";
+import { RoseMark } from "@/lib/og-rose";
 
 
 export const alt = "Photos by Yash Goel";
@@ -85,7 +86,7 @@ export default async function Image() {
               fontFamily: "ui-sans-serif, -apple-system, system-ui, sans-serif",
             }}
           >
-            <span style={{ color: "#fb7185" }}>❋</span>
+            <RoseMark size={18} />
             <span>Photographs</span>
             {hero.location && (
               <>

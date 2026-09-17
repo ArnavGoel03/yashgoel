@@ -44,3 +44,7 @@ next-env.d.ts
 .claude/
 _local/
 .wrangler/
+
+# Browser verification output
+/test-results/
+/playwright-report/

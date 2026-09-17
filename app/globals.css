@@ -164,8 +164,8 @@
   }
 
   /* Cross-page view transitions (baseline fade). React/Next trigger the
-     named transition for route changes when `experimental.viewTransition`
-     is enabled in next.config. Users with reduced-motion preference skip
+     named transition for route changes without configuration. Users with
+     reduced-motion preference skip
      this via the media query below. */
   ::view-transition-old(root),
   ::view-transition-new(root) {

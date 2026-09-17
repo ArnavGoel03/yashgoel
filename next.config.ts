@@ -49,9 +49,6 @@ const nextConfig: NextConfig = {
   // and per-route page wrappers) becomes a prerendered cache hit, with
   // tag-based invalidation through `cacheTag` + `updateTag`.
   cacheComponents: true,
-  experimental: {
-    viewTransition: true,
-  },
   // Next/Image only fetches remote hosts that match one of these
   // patterns. Vercel Blob assets live at <storeId>.public.blob.vercel-storage.com
   // (any Blob store you connect, with or without a custom prefix). Product
