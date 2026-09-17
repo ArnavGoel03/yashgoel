@@ -11,6 +11,10 @@ test("public pages, navigation and photo lightbox remain usable", async ({ page 
     await page.screenshot({ path: info.outputPath(`${info.project.name}-${route.slice(1) || "home"}.png`) });
   }
 
+  await page.evaluate(() => {
+    document.dispatchEvent(new MouseEvent("mouseenter"));
+    document.dispatchEvent(new MouseEvent("click"));
+  });
   await page.locator("[data-lightbox-index]").first().click();
   const overlay = page.locator("[data-lightbox-overlay]");
   await expect(overlay).toBeVisible();

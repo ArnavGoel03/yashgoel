@@ -2,6 +2,12 @@ name: Stack verification
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      browser_scope:
+        description: Browser acceptance scope (full remains the default)
+        type: choice
+        default: full
+        options: [full, interactions]
 permissions:
   contents: read
 concurrency:
@@ -23,7 +29,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run test && pnpm run lint && pnpm run typecheck && pnpm run build
       - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm exec playwright test
+      - name: Browser acceptance
+        env:
+          BROWSER_SCOPE: ${{ inputs.browser_scope || 'full' }}
+        run: |
+          if [ "$BROWSER_SCOPE" = "interactions" ]; then
+            pnpm exec playwright test browser-tests/stack.e2e.mjs
+          else
+            pnpm exec playwright test
+          fi
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
