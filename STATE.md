@@ -1,6 +1,28 @@
 # Yashgoel · State
 
-## Current availability, 18 September 2026
+## Current availability, 22 September 2026
+
+Reviews is live at https://reviews.arnavgoel.dev through READY deployment
+`dpl_BK7asHgwxPXY3qyBKokBbDKW1qb2`, exact main source
+`eec433448774a42c3eb722803937a2f93c5f6964`. The homepage now emits exactly
+one canonical URL, `https://reviews.arnavgoel.dev`. `/about` still emits its
+own child canonical, `https://reviews.arnavgoel.dev/about`. The canonical host
+is the source default and is pinned when `VERCEL_ENV=production`, so a stale
+public environment value cannot move production metadata to another host. The
+Vercel environment value is also corrected for production, preview and
+development.
+
+The isolated source passes 144 tests, clean lint, native typecheck and a
+269-page production build. A second production build deliberately supplied the
+old `https://yashgoel.bio` value and emitted the Reviews host with no old-host
+reference in the homepage RSC. Provider build logs confirm source `eec4334`;
+live homepage and `/about` HTTP checks return 200, HSTS and one exact canonical
+each. No review content, page copy, schemas or application data changed. Full
+receipt: `docs/receipts/homepage-canonical-2026-09-22.json`. HTTP metadata was
+verified; this release makes no new rendered visual acceptance claim.
+
+
+## Previous availability, 18 September 2026
 
 The verified stack upgrade is live at https://yashgoel.vercel.app, READY
 `dpl_7crMNHAok1dLV8dd8eD9fahdX2v9`, source
