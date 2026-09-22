@@ -1,0 +1,58 @@
+{
+  "checkedAt": "2026-09-22T16:37:15.893171+00:00",
+  "project": "yashgoel",
+  "canonicalAlias": "https://reviews.arnavgoel.dev",
+  "source": {
+    "featureCommit": "5b7b0b5ccae1da6a1a2ddedb10158d0a03ab5598",
+    "mainMergeCommit": "eec433448774a42c3eb722803937a2f93c5f6964",
+    "providerBuildLogCommit": "eec4334"
+  },
+  "deployment": {
+    "id": "dpl_BK7asHgwxPXY3qyBKokBbDKW1qb2",
+    "url": "https://yashgoel-3dntfyhqo-arnavgoel03s-projects.vercel.app",
+    "target": "production",
+    "status": "READY"
+  },
+  "configuration": {
+    "NEXT_PUBLIC_SITE_URL": "https://reviews.arnavgoel.dev",
+    "environments": [
+      "production",
+      "preview",
+      "development"
+    ],
+    "productionGuard": "VERCEL_ENV=production resolves metadata against DEFAULT_SITE_URL even if a stale configured URL is present"
+  },
+  "routes": [
+    {
+      "url": "https://reviews.arnavgoel.dev/",
+      "status": 200,
+      "canonical": "https://reviews.arnavgoel.dev",
+      "canonicalCount": 1,
+      "openGraphUrl": "https://reviews.arnavgoel.dev",
+      "contentType": "text/html; charset=utf-8",
+      "hsts": true
+    },
+    {
+      "url": "https://reviews.arnavgoel.dev/about",
+      "status": 200,
+      "canonical": "https://reviews.arnavgoel.dev/about",
+      "canonicalCount": 1,
+      "contentType": "text/html; charset=utf-8",
+      "hsts": true
+    }
+  ],
+  "validation": {
+    "localFullTestsBeforeProductionGuard": "144/144 passed",
+    "productionGuardFocusedTests": "2/2 passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed, 269 generated pages",
+    "staleOverrideBuildProbe": "NEXT_PUBLIC_SITE_URL=https://yashgoel.bio with VERCEL_ENV=production emitted reviews.arnavgoel.dev and zero yashgoel.bio references in the homepage RSC",
+    "hostedSourceGate": "full test, lint, typecheck and build step passed for 5b7b0b5 in GitHub run 35754976533"
+  },
+  "limits": [
+    "This receipt verifies HTTP metadata and provider state, not rendered visual acceptance.",
+    "The isolated deployment URL requires Vercel authentication, so public checks use the canonical alias.",
+    "No review content, page copy, schemas or application data changed."
+  ]
+}

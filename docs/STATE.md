@@ -1,4 +1,26 @@
-# Live stack and image-cache verification, 18 September 2026
+# Reviews canonical release, 22 September 2026
+
+The canonical Reviews hostname is live at https://reviews.arnavgoel.dev. Vercel
+reports production deployment `dpl_BK7asHgwxPXY3qyBKokBbDKW1qb2` READY, and
+its build log identifies exact main source
+`eec433448774a42c3eb722803937a2f93c5f6964`. The homepage defines its canonical
+at the page boundary, so child routes keep their own canonical metadata. Live
+HTTP checks found exactly one homepage canonical,
+`https://reviews.arnavgoel.dev`, and exactly one `/about` canonical,
+`https://reviews.arnavgoel.dev/about`, both on HTTP 200 responses with HSTS.
+
+`lib/site.ts` now defaults to the Reviews domain and pins that value for Vercel
+production. `NEXT_PUBLIC_SITE_URL` was also corrected across Vercel production,
+preview and development. The guard was built with the prior
+`https://yashgoel.bio` value deliberately injected; the homepage RSC contained
+the Reviews host and no old-host reference. The isolated checkout passes 144
+tests, lint, native typecheck and a 269-page build. GitHub run 35754976533 also
+passed its full test, lint, typecheck and build step for the feature source. No
+review content, page copy, schema or application data changed. This receipt
+verifies provider and HTTP metadata, not new rendered visual acceptance. Exact
+evidence: `docs/receipts/homepage-canonical-2026-09-22.json`.
+
+# Historical live stack and image-cache verification, 18 September 2026
 
 The verified upgrade is live at https://yashgoel.vercel.app. Provider alias
 readback confirms READY deployment `dpl_7crMNHAok1dLV8dd8eD9fahdX2v9`, GitHub
