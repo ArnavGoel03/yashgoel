@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
@@ -15,6 +16,10 @@ import { getReviewsInRoutine } from "@/lib/routines";
 import { photos } from "@/lib/photos";
 import { KIND_LABEL, KINDS, kindPath } from "@/lib/types";
 import type { Kind, ReviewSummary } from "@/lib/types";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 // One line per section, in KINDS order. The tile grid below is built
 // from this map, so a new kind can never be silently missing from the
