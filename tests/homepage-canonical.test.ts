@@ -3,11 +3,17 @@ import { describe, expect, it } from "vitest";
 
 import { metadata as aboutMetadata } from "@/app/about/page";
 import { metadata as homeMetadata } from "@/app/page";
-import { DEFAULT_SITE_URL } from "@/lib/site";
+import { DEFAULT_SITE_URL, resolveSiteUrl } from "@/lib/site";
 
 describe("canonical metadata", () => {
   it("uses the Reviews host for relative metadata by default", () => {
     expect(DEFAULT_SITE_URL).toBe("https://reviews.arnavgoel.dev");
+    expect(resolveSiteUrl("production", "https://yashgoel.bio")).toBe(
+      DEFAULT_SITE_URL,
+    );
+    expect(resolveSiteUrl("preview", "https://preview.example")).toBe(
+      "https://preview.example",
+    );
   });
 
   it("sets the homepage canonical at the page boundary", () => {
